@@ -347,28 +347,56 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
 
 type Row = { gmail: string; password: string };
 
+function parseGmailList(text: string): string[] {
+  return text
+    .split(/[\s,;]+/)
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.length > 0);
+}
+
 function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: number; dailyLimit: number; todayCount: number; onClose: () => void; onDone: () => void }) {
-  const [rows, setRows] = useState<Row[]>([{ gmail: "", password: "" }]);
+  const [pasteText, setPasteText] = useState("");
+  const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
 
   const remaining = dailyLimit > 0 ? Math.max(0, dailyLimit - todayCount) : Infinity;
 
-  const updateRow = (i: number, patch: Partial<Row>) => {
-    setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
-  };
-  const addRow = () => {
-    if (rows.length >= remaining) {
-      toast.error(`Sisa jatah hari ini ${remaining} Gmail`);
+  const applyPaste = () => {
+    const list = parseGmailList(pasteText);
+    if (list.length === 0) {
+      toast.error("Tidak ada alamat Gmail terdeteksi");
       return;
     }
-    setRows((prev) => [...prev, { gmail: "", password: "" }]);
+    if (dailyLimit > 0 && list.length > remaining) {
+      toast.error(`Melebihi sisa jatah hari ini (${remaining} Gmail)`);
+      return;
+    }
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    for (const addr of list) {
+      if (!seen.has(addr)) {
+        seen.add(addr);
+        unique.push(addr);
+      }
+    }
+    setRows(unique.map((gmail) => ({ gmail, password: "" })));
+    setPasteText("");
+    toast.success(`${unique.length} Gmail dimuat, isi password di bawah`);
+  };
+
+  const updatePassword = (i: number, password: string) => {
+    setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, password } : r)));
   };
   const removeRow = (i: number) => {
-    setRows((prev) => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== i)));
+    setRows((prev) => prev.filter((_, idx) => idx !== i));
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (rows.length === 0) {
+      toast.error("Belum ada Gmail. Paste alamat dulu di kotak atas.");
+      return;
+    }
     if (dailyLimit > 0 && todayCount >= dailyLimit) {
       toast.error(`Batas setoran hari ini tercapai (${dailyLimit} Gmail)`);
       return;
@@ -402,6 +430,8 @@ function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: 
     onDone();
   };
 
+  const filledCount = rows.filter((r) => r.password.length > 0).length;
+
   return (
     <ModalShell title="Pilih password" onClose={onClose}>
       <p className="text-sm text-gray-500 mb-4">
@@ -410,50 +440,74 @@ function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: 
           <> · Sisa hari ini <span className="font-semibold text-gray-800">{remaining}</span></>
         )}
       </p>
-      <form onSubmit={submit} className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-        {rows.map((row, i) => (
-          <div key={i} className="rounded-xl border border-gray-200 p-3 space-y-2 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-500">Gmail #{i + 1}</span>
-              {rows.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeRow(i)}
-                  className="text-xs text-red-500 hover:text-red-700"
-                >
-                  Hapus
-                </button>
-              )}
+      <form onSubmit={submit} className="space-y-3">
+        {/* Bulk paste area */}
+        <div className="rounded-xl border border-gray-200 p-3 space-y-2">
+          <label className="text-xs font-medium text-gray-500 block">
+            Paste alamat Gmail di sini (boleh banyak baris / dipisah spasi/koma)
+          </label>
+          <textarea
+            placeholder={"alamat1@gmail.com\nalamat2@gmail.com\nalamat3@gmail.com"}
+            value={pasteText}
+            onChange={(e) => setPasteText(e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2.5 rounded-lg bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300 resize-y font-mono"
+          />
+          <button
+            type="button"
+            onClick={applyPaste}
+            className="w-full bg-[var(--ink)] text-white font-medium py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
+          >
+            Muat Gmail
+          </button>
+        </div>
+
+        {/* Password rows */}
+        {rows.length > 0 && (
+          <div className="space-y-2 max-h-[45vh] overflow-y-auto pr-1">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-medium text-gray-500">
+                {rows.length} Gmail · {filledCount} password terisi
+              </span>
+              <button
+                type="button"
+                onClick={() => setRows([])}
+                className="text-xs text-red-500 hover:text-red-700"
+              >
+                Hapus semua
+              </button>
             </div>
-            <input
-              type="email"
-              placeholder="alamat@gmail.com"
-              value={row.gmail}
-              onChange={(e) => updateRow(i, { gmail: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
-            />
-            <input
-              type="text"
-              placeholder="password (huruf kecil semua)"
-              value={row.password}
-              onChange={(e) => updateRow(i, { password: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
-            />
+            {rows.map((row, i) => (
+              <div key={i} className="rounded-xl border border-gray-200 p-3 space-y-2 relative">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-gray-500 shrink-0">#{i + 1}</span>
+                  <p className="text-sm text-gray-800 font-medium truncate flex-1">{row.gmail}</p>
+                  <button
+                    type="button"
+                    onClick={() => removeRow(i)}
+                    className="text-xs text-red-500 hover:text-red-700 shrink-0"
+                  >
+                    Hapus
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="password (huruf kecil semua)"
+                  value={row.password}
+                  onChange={(e) => updatePassword(i, e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+                />
+              </div>
+            ))}
           </div>
-        ))}
-        <button
-          type="button"
-          onClick={addRow}
-          className="w-full border border-dashed border-gray-300 text-gray-600 font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
-        >
-          + Tambah Gmail
-        </button>
+        )}
+
         <p className="text-[11px] text-gray-400 leading-relaxed">
           Password wajib huruf kecil semua. Huruf besar otomatis ditolak.
         </p>
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || rows.length === 0}
           className="w-full bg-[var(--ink)] text-white font-medium py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
         >
           {busy ? "Mengirim..." : `Kirim ${rows.length} Gmail`}
