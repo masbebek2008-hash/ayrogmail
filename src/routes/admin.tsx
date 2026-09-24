@@ -73,6 +73,7 @@ function AdminPage() {
   const [subs, setSubs] = useState<Submission[]>([]);
   const [wds, setWds] = useState<Withdrawal[]>([]);
   const [tab, setTab] = useState<"setoran" | "penarikan">("setoran");
+  const [search, setSearch] = useState("");
   const [section, setSection] = useState<"transaksi" | "pengaturan" | "admin">("transaksi");
 
   useEffect(() => {
