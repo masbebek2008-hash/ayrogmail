@@ -229,6 +229,9 @@ function AdminPage() {
     </div>
   );
 
+  const query = search.trim().toLowerCase();
+  const filteredSubs = query ? subs.filter((s) => s.gmail_address.toLowerCase().includes(query)) : subs;
+  const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
   const navItems = [
