@@ -11,6 +11,7 @@ import {
   Clipboard,
   Copy,
   Mail,
+  Search,
   Settings,
   ShieldCheck,
   Trash2,
