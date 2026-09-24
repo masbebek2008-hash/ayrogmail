@@ -11,6 +11,7 @@ import {
   Clipboard,
   Copy,
   Mail,
+  Search,
   Settings,
   ShieldCheck,
   Trash2,
@@ -73,6 +74,7 @@ function AdminPage() {
   const [subs, setSubs] = useState<Submission[]>([]);
   const [wds, setWds] = useState<Withdrawal[]>([]);
   const [tab, setTab] = useState<"setoran" | "penarikan">("setoran");
+  const [search, setSearch] = useState("");
   const [section, setSection] = useState<"transaksi" | "pengaturan" | "admin">("transaksi");
 
   useEffect(() => {
@@ -228,6 +230,9 @@ function AdminPage() {
     </div>
   );
 
+  const query = search.trim().toLowerCase();
+  const filteredSubs = query ? subs.filter((s) => s.gmail_address.toLowerCase().includes(query)) : subs;
+  const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
   const navItems = [
@@ -257,8 +262,19 @@ function AdminPage() {
 
           {section === "transaksi" && <section className="space-y-4">
             <div className="grid grid-cols-2 rounded-2xl bg-muted p-1"><Button type="button" variant="ghost" onClick={() => setTab("setoran")} className={`rounded-xl ${tab === "setoran" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><Clipboard />Setoran</Button><Button type="button" variant="ghost" onClick={() => setTab("penarikan")} className={`rounded-xl ${tab === "penarikan" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><WalletCards />Penarikan</Button></div>
-            {tab === "setoran" && (subs.length === 0 ? <EmptyState text="Belum ada setoran." /> : subs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => setSubStatus(s.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus Gmail</Button></article>))}
-            {tab === "penarikan" && (wds.length === 0 ? <EmptyState text="Belum ada penarikan." /> : wds.map((w) => <article key={w.id} className="space-y-5 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari Gmail / nomor tujuan..."
+                className="h-12 w-full rounded-2xl border border-border bg-card pl-11 pr-11 text-sm text-foreground outline-none transition focus:border-admin-primary focus:ring-2 focus:ring-admin-primary-soft"
+              />
+              {search && <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label="Bersihkan pencarian"><X className="size-4" /></button>}
+            </div>
+            {tab === "setoran" && (filteredSubs.length === 0 ? <EmptyState text={search ? "Tidak ada Gmail yang cocok dengan pencarian." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => setSubStatus(s.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus Gmail</Button></article>))}
+            {tab === "penarikan" && (filteredWds.length === 0 ? <EmptyState text={search ? "Tidak ada penarikan yang cocok dengan pencarian." : "Belum ada penarikan."} /> : filteredWds.map((w) => <article key={w.id} className="space-y-5 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
           </section>}
 
           {section === "pengaturan" && <section className="space-y-4"><div className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div><h2 className="font-admin-heading text-base">Status setoran</h2><p className="mt-1 text-xs text-muted-foreground">{submissionsOpen ? "Member bisa mengirim Gmail." : "Pengiriman Gmail sedang ditutup."}</p></div><Button type="button" onClick={toggleOpen} className={`shrink-0 rounded-xl ${submissionsOpen ? "bg-admin-danger text-primary-foreground hover:bg-admin-danger/90" : "bg-admin-success text-primary-foreground hover:bg-admin-success/90"}`}>{submissionsOpen ? "Tutup" : "Buka"}</Button></div><form onSubmit={saveSettings} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div><h2 className="font-admin-heading text-base">Pengaturan transaksi</h2><p className="mt-1 text-xs text-muted-foreground">Atur tarif dan batas transaksi member.</p></div>{[["Tarif per Gmail (Rp)",rate,setRate],["Saldo minimal penarikan (Rp)",minWithdraw,setMinWithdraw],["Biaya admin per penarikan (Rp)",adminFee,setAdminFee],["Batas setoran Gmail per hari (0 = tanpa batas)",dailyLimit,setDailyLimit]] .map(([label,value,setter]) => <label key={label as string} className="block text-xs font-semibold text-muted-foreground">{label as string}<input type="text" inputMode="numeric" value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} className={inputClass} /></label>)}<Button type="submit" disabled={savingSettings} className="h-12 w-full rounded-2xl bg-admin-primary text-primary-foreground hover:bg-admin-primary/90">{savingSettings ? "Menyimpan..." : "Simpan pengaturan"}</Button></form></section>}
