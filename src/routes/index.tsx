@@ -345,8 +345,6 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
   );
 }
 
-type Row = { gmail: string; password: string };
-
 function parseGmailList(text: string): string[] {
   return text
     .split(/[\s,;]+/)
@@ -356,7 +354,8 @@ function parseGmailList(text: string): string[] {
 
 function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: number; dailyLimit: number; todayCount: number; onClose: () => void; onDone: () => void }) {
   const [pasteText, setPasteText] = useState("");
-  const [rows, setRows] = useState<Row[]>([]);
+  const [gmails, setGmails] = useState<string[]>([]);
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   const remaining = dailyLimit > 0 ? Math.max(0, dailyLimit - todayCount) : Infinity;
@@ -379,58 +378,62 @@ function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: 
         unique.push(addr);
       }
     }
-    setRows(unique.map((gmail) => ({ gmail, password: "" })));
+    setGmails((prev) => {
+      const existing = new Set(prev);
+      const added = unique.filter((a) => !existing.has(a));
+      if (added.length === 0) {
+        toast.info("Semua Gmail sudah dimuat sebelumnya");
+        return prev;
+      }
+      toast.success(`${added.length} Gmail dimuat`);
+      return [...prev, ...added];
+    });
     setPasteText("");
-    toast.success(`${unique.length} Gmail dimuat, isi password di bawah`);
   };
 
-  const updatePassword = (i: number, password: string) => {
-    setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, password } : r)));
-  };
-  const removeRow = (i: number) => {
-    setRows((prev) => prev.filter((_, idx) => idx !== i));
+  const removeGmail = (addr: string) => {
+    setGmails((prev) => prev.filter((g) => g !== addr));
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rows.length === 0) {
+    if (gmails.length === 0) {
       toast.error("Belum ada Gmail. Paste alamat dulu di kotak atas.");
+      return;
+    }
+    if (!password) {
+      toast.error("Password masih kosong");
+      return;
+    }
+    if (password !== password.toLowerCase()) {
+      toast.error("Password wajib huruf kecil semua");
       return;
     }
     if (dailyLimit > 0 && todayCount >= dailyLimit) {
       toast.error(`Batas setoran hari ini tercapai (${dailyLimit} Gmail)`);
       return;
     }
-    if (dailyLimit > 0 && rows.length > remaining) {
+    if (dailyLimit > 0 && gmails.length > remaining) {
       toast.error(`Melebihi sisa jatah hari ini (${remaining} Gmail)`);
       return;
     }
-    const cleaned: { gmail: string; password: string }[] = [];
-    const seen = new Set<string>();
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i]!;
-      const addr = row.gmail.trim().toLowerCase();
-      const pwd = row.password;
-      if (!/^[^\s@]+@gmail\.com$/.test(addr)) { toast.error(`Baris ${i + 1}: alamat Gmail tidak valid`); return; }
-      if (!pwd) { toast.error(`Baris ${i + 1}: password kosong`); return; }
-      if (pwd !== pwd.toLowerCase()) { toast.error(`Baris ${i + 1}: password wajib huruf kecil`); return; }
-      if (seen.has(addr)) { toast.error(`Alamat ${addr} terisi lebih dari sekali`); return; }
-      seen.add(addr);
-      cleaned.push({ gmail: addr, password: pwd });
+    for (const addr of gmails) {
+      if (!/^[^\s@]+@gmail\.com$/.test(addr)) {
+        toast.error(`Alamat tidak valid: ${addr}`);
+        return;
+      }
     }
     setBusy(true);
     const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user!.id;
     const { error } = await supabase.from("gmail_submissions").insert(
-      cleaned.map((c) => ({ user_id: uid, gmail_address: c.gmail, password: c.password, rate })),
+      gmails.map((gmail_address) => ({ user_id: uid, gmail_address, password, rate })),
     );
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    toast.success(`${cleaned.length} Gmail terkirim, menunggu persetujuan`);
+    toast.success(`${gmails.length} Gmail terkirim, menunggu persetujuan`);
     onDone();
   };
-
-  const filledCount = rows.filter((r) => r.password.length > 0).length;
 
   return (
     <ModalShell title="Pilih password" onClose={onClose}>
@@ -462,55 +465,55 @@ function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: 
           </button>
         </div>
 
-        {/* Password rows */}
-        {rows.length > 0 && (
-          <div className="space-y-2 max-h-[45vh] overflow-y-auto pr-1">
+        {/* Single shared password */}
+        {gmails.length > 0 && (
+          <input
+            type="text"
+            placeholder="Password (satu untuk semua Gmail, huruf kecil semua)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+          />
+        )}
+
+        {/* Loaded Gmail list */}
+        {gmails.length > 0 && (
+          <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-medium text-gray-500">
-                {rows.length} Gmail · {filledCount} password terisi
-              </span>
+              <span className="text-xs font-medium text-gray-500">{gmails.length} Gmail dimuat</span>
               <button
                 type="button"
-                onClick={() => setRows([])}
+                onClick={() => setGmails([])}
                 className="text-xs text-red-500 hover:text-red-700"
               >
                 Hapus semua
               </button>
             </div>
-            {rows.map((row, i) => (
-              <div key={i} className="rounded-xl border border-gray-200 p-3 space-y-2 relative">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium text-gray-500 shrink-0">#{i + 1}</span>
-                  <p className="text-sm text-gray-800 font-medium truncate flex-1">{row.gmail}</p>
-                  <button
-                    type="button"
-                    onClick={() => removeRow(i)}
-                    className="text-xs text-red-500 hover:text-red-700 shrink-0"
-                  >
-                    Hapus
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  placeholder="password (huruf kecil semua)"
-                  value={row.password}
-                  onChange={(e) => updatePassword(i, e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
-                />
+            {gmails.map((gmail, i) => (
+              <div key={gmail} className="flex items-center justify-between gap-2 rounded-xl border border-gray-200 px-3 py-2.5">
+                <span className="text-xs text-gray-400 shrink-0">#{i + 1}</span>
+                <p className="text-sm text-gray-800 font-medium truncate flex-1">{gmail}</p>
+                <button
+                  type="button"
+                  onClick={() => removeGmail(gmail)}
+                  className="text-xs text-red-500 hover:text-red-700 shrink-0"
+                >
+                  Hapus
+                </button>
               </div>
             ))}
           </div>
         )}
 
         <p className="text-[11px] text-gray-400 leading-relaxed">
-          Password wajib huruf kecil semua. Huruf besar otomatis ditolak.
+          Password wajib huruf kecil semua. Huruf besar otomatis ditolak. Password dipakai untuk semua Gmail di daftar.
         </p>
         <button
           type="submit"
-          disabled={busy || rows.length === 0}
+          disabled={busy || gmails.length === 0}
           className="w-full bg-[var(--ink)] text-white font-medium py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
         >
-          {busy ? "Mengirim..." : `Kirim ${rows.length} Gmail`}
+          {busy ? "Mengirim..." : `Kirim ${gmails.length} Gmail`}
         </button>
       </form>
     </ModalShell>
