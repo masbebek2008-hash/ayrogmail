@@ -417,6 +417,12 @@ function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: 
       toast.error(`Melebihi sisa jatah hari ini (${remaining} Gmail)`);
       return;
     }
+    for (const addr of gmails) {
+      if (!/^[^\s@]+@gmail\.com$/.test(addr)) {
+        toast.error(`Alamat tidak valid: ${addr}`);
+        return;
+      }
+    }
     setBusy(true);
     const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user!.id;
