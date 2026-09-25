@@ -1,0 +1,1 @@
+ALTER TABLE public.gmail_submissions ADD COLUMN IF NOT EXISTS hidden_from_admin boolean NOT NULL DEFAULT false;
