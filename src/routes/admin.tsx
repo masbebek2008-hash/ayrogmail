@@ -95,6 +95,7 @@ function AdminPage() {
       supabase
         .from("gmail_submissions")
         .select("id, gmail_address, password, status, rate, created_at")
+        .eq("hidden_from_admin", false)
         .order("created_at", { ascending: false }),
       supabase
         .from("withdrawals")
@@ -200,8 +201,8 @@ function AdminPage() {
   };
 
   const deleteSub = async (id: string) => {
-    if (!window.confirm("Hapus Gmail ini secara permanen?")) return;
-    const { error } = await supabase.from("gmail_submissions").delete().eq("id", id);
+    if (!window.confirm("Sembunyikan Gmail ini dari panel admin? Riwayat member tetap tersimpan.")) return;
+    const { error } = await supabase.from("gmail_submissions").update({ hidden_from_admin: true }).eq("id", id);
     if (error) { toast.error(error.message); return; }
     setSubs((prev) => prev.filter((s) => s.id !== id));
     toast.success("Gmail dihapus");

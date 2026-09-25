@@ -48,6 +48,7 @@ export type Database = {
         Row: {
           created_at: string
           gmail_address: string
+          hidden_from_admin: boolean
           id: string
           password: string
           rate: number
@@ -57,6 +58,7 @@ export type Database = {
         Insert: {
           created_at?: string
           gmail_address: string
+          hidden_from_admin?: boolean
           id?: string
           password: string
           rate?: number
@@ -66,6 +68,7 @@ export type Database = {
         Update: {
           created_at?: string
           gmail_address?: string
+          hidden_from_admin?: boolean
           id?: string
           password?: string
           rate?: number
