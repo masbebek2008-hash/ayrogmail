@@ -282,9 +282,42 @@ function AdminPage() {
             <button type="button" onClick={() => { setSection("transaksi"); setTab("penarikan"); }} className="rounded-3xl border border-border bg-card p-5 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-3xl">{pendingWds}</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Penarikan aktif</p></button>
           </section>
 
-          <nav className="grid grid-cols-3 gap-2" aria-label="Menu admin">
+          <nav className="grid grid-cols-4 gap-2" aria-label="Menu admin">
             {navItems.map(({ id, label, icon: Icon }) => <Button key={id} type="button" variant="ghost" onClick={() => setSection(id)} className={`h-auto min-w-0 flex-col gap-2 rounded-2xl px-2 py-3 ${section === id ? "bg-admin-primary-soft text-admin-primary" : "text-muted-foreground hover:bg-muted"}`}><Icon className="size-5" /><span className="text-[11px] font-bold">{label}</span></Button>)}
           </nav>
+
+          {section === "member" && <section className="space-y-4">
+            <div className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <div><h2 className="font-admin-heading text-base">Daftar member</h2><p className="mt-1 text-xs text-muted-foreground">Semua akun yang terdaftar di AyroGmail.</p></div>
+              <span className="shrink-0 rounded-full bg-admin-primary-soft px-3 py-1 text-[10px] font-bold uppercase text-admin-primary">{members.length} member</span>
+            </div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Cari nama / Gmail member..."
+                className="h-12 w-full rounded-2xl border border-border bg-card pl-11 pr-11 text-sm text-foreground outline-none transition focus:border-admin-primary focus:ring-2 focus:ring-admin-primary-soft"
+              />
+              {memberSearch && <button type="button" onClick={() => setMemberSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label="Bersihkan pencarian member"><X className="size-4" /></button>}
+            </div>
+            {filteredMembers.length === 0 ? <EmptyState text={memberSearch ? "Tidak ada member yang cocok dengan pencarian." : "Belum ada member terdaftar."} /> : filteredMembers.map((m) => <article key={m.user_id} className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="truncate font-admin-heading text-base">{m.display_name}</h3>
+                  <p className="mt-1 truncate text-xs text-muted-foreground">{m.email}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Bergabung {new Date(m.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</p>
+                </div>
+                {m.user_id === session.user.id && <span className="shrink-0 rounded-full bg-admin-primary-soft px-3 py-1 text-[10px] font-bold uppercase text-admin-primary">Anda</span>}
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-2xl bg-muted p-3"><p className="font-admin-heading text-lg">{m.total_subs}</p><p className="text-[10px] font-semibold text-muted-foreground">Setoran</p></div>
+                <div className="rounded-2xl bg-muted p-3"><p className="font-admin-heading text-lg">{m.approved_subs}</p><p className="text-[10px] font-semibold text-muted-foreground">Disetujui</p></div>
+                <div className="rounded-2xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{formatRupiah(m.earned)}</p><p className="text-[10px] font-semibold text-admin-success">Didapat</p></div>
+              </div>
+            </article>)}
+          </section>}
 
           {section === "transaksi" && <section className="space-y-4">
             <div className="grid grid-cols-2 rounded-2xl bg-muted p-1"><Button type="button" variant="ghost" onClick={() => setTab("setoran")} className={`rounded-xl ${tab === "setoran" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><Clipboard />Setoran</Button><Button type="button" variant="ghost" onClick={() => setTab("penarikan")} className={`rounded-xl ${tab === "penarikan" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><WalletCards />Penarikan</Button></div>
