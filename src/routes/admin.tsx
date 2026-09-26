@@ -38,6 +38,7 @@ export const Route = createFileRoute("/admin")({
 
 type Submission = {
   id: string;
+  user_id: string;
   gmail_address: string;
   password: string;
   status: string;
@@ -98,7 +99,7 @@ function AdminPage() {
     const [s, w, st, m] = await Promise.all([
       supabase
         .from("gmail_submissions")
-        .select("id, gmail_address, password, status, rate, created_at")
+        .select("id, user_id, gmail_address, password, status, rate, created_at")
         .eq("hidden_from_admin", false)
         .order("created_at", { ascending: false }),
       supabase
@@ -241,7 +242,20 @@ function AdminPage() {
   );
 
   const query = search.trim().toLowerCase();
-  const filteredSubs = query ? subs.filter((s) => s.gmail_address.toLowerCase().includes(query)) : subs;
+  const memberById = new Map(members.map((m) => [m.user_id, m]));
+  const memberLabel = (userId: string) => {
+    const m = memberById.get(userId);
+    return m ? `${m.display_name} (${m.email})` : "Member";
+  };
+  const filteredSubs = query
+    ? subs.filter((s) => {
+        const m = memberById.get(s.user_id);
+        return (
+          s.gmail_address.toLowerCase().includes(query) ||
+          (m && (m.display_name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query)))
+        );
+      })
+    : subs;
   const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
