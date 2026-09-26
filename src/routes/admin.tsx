@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/use-session";
 import { addAdminByEmail, listAdmins, removeAdmin } from "@/lib/admin-users.functions";
+import { listMembers, type MemberRow } from "@/lib/members.functions";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -16,6 +17,7 @@ import {
   ShieldCheck,
   Trash2,
   UserCog,
+  Users,
   WalletCards,
   X,
 } from "lucide-react";
@@ -73,9 +75,11 @@ function AdminPage() {
   const [savingAdmin, setSavingAdmin] = useState(false);
   const [subs, setSubs] = useState<Submission[]>([]);
   const [wds, setWds] = useState<Withdrawal[]>([]);
+  const [members, setMembers] = useState<MemberRow[]>([]);
   const [tab, setTab] = useState<"setoran" | "penarikan">("setoran");
   const [search, setSearch] = useState("");
-  const [section, setSection] = useState<"transaksi" | "pengaturan" | "admin">("transaksi");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [section, setSection] = useState<"transaksi" | "member" | "pengaturan" | "admin">("transaksi");
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
@@ -91,7 +95,7 @@ function AdminPage() {
     const admin = !!roles && roles.length > 0;
     setIsAdmin(admin);
     if (!admin) return;
-    const [s, w, st] = await Promise.all([
+    const [s, w, st, m] = await Promise.all([
       supabase
         .from("gmail_submissions")
         .select("id, gmail_address, password, status, rate, created_at")
@@ -106,9 +110,14 @@ function AdminPage() {
         .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open")
         .eq("id", "global")
         .maybeSingle(),
+      listMembers().catch<MemberRow[]>((err) => {
+        toast.error(err instanceof Error ? err.message : "Gagal memuat daftar member");
+        return [];
+      }),
     ]);
     setSubs((s.data as Submission[]) ?? []);
     setWds((w.data as Withdrawal[]) ?? []);
+    setMembers(m);
     if (st.data) {
       setRate(String(st.data.rate));
       setMinWithdraw(String(st.data.min_withdraw));
@@ -236,8 +245,13 @@ function AdminPage() {
   const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
+  const memberQuery = memberSearch.trim().toLowerCase();
+  const filteredMembers = memberQuery
+    ? members.filter((m) => m.email.toLowerCase().includes(memberQuery) || m.display_name.toLowerCase().includes(memberQuery))
+    : members;
   const navItems = [
     { id: "transaksi" as const, label: "Transaksi", icon: WalletCards },
+    { id: "member" as const, label: "Member", icon: Users },
     { id: "pengaturan" as const, label: "Pengaturan", icon: Settings },
     { id: "admin" as const, label: "Admin", icon: UserCog },
   ];
