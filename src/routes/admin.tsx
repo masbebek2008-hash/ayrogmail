@@ -38,6 +38,7 @@ export const Route = createFileRoute("/admin")({
 
 type Submission = {
   id: string;
+  user_id: string;
   gmail_address: string;
   password: string;
   status: string;
@@ -98,7 +99,7 @@ function AdminPage() {
     const [s, w, st, m] = await Promise.all([
       supabase
         .from("gmail_submissions")
-        .select("id, gmail_address, password, status, rate, created_at")
+        .select("id, user_id, gmail_address, password, status, rate, created_at")
         .eq("hidden_from_admin", false)
         .order("created_at", { ascending: false }),
       supabase
@@ -241,7 +242,20 @@ function AdminPage() {
   );
 
   const query = search.trim().toLowerCase();
-  const filteredSubs = query ? subs.filter((s) => s.gmail_address.toLowerCase().includes(query)) : subs;
+  const memberById = new Map(members.map((m) => [m.user_id, m]));
+  const memberLabel = (userId: string) => {
+    const m = memberById.get(userId);
+    return m ? `${m.display_name} (${m.email})` : "Member";
+  };
+  const filteredSubs = query
+    ? subs.filter((s) => {
+        const m = memberById.get(s.user_id);
+        return (
+          s.gmail_address.toLowerCase().includes(query) ||
+          (m && (m.display_name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query)))
+        );
+      })
+    : subs;
   const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
@@ -332,7 +346,7 @@ function AdminPage() {
               />
               {search && <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label="Bersihkan pencarian"><X className="size-4" /></button>}
             </div>
-            {tab === "setoran" && (filteredSubs.length === 0 ? <EmptyState text={search ? "Tidak ada Gmail yang cocok dengan pencarian." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => setSubStatus(s.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button></article>))}
+            {tab === "setoran" && (filteredSubs.length === 0 ? <EmptyState text={search ? "Tidak ada Gmail yang cocok dengan pencarian." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 truncate text-xs font-medium text-admin-primary">Storan: {memberLabel(s.user_id)}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => setSubStatus(s.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button></article>))}
             {tab === "penarikan" && (filteredWds.length === 0 ? <EmptyState text={search ? "Tidak ada penarikan yang cocok dengan pencarian." : "Belum ada penarikan."} /> : filteredWds.map((w) => <article key={w.id} className="space-y-5 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
           </section>}
 
