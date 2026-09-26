@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/use-session";
 import { addAdminByEmail, listAdmins, removeAdmin } from "@/lib/admin-users.functions";
+import { listMembers, type MemberRow } from "@/lib/members.functions";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -16,6 +17,7 @@ import {
   ShieldCheck,
   Trash2,
   UserCog,
+  Users,
   WalletCards,
   X,
 } from "lucide-react";
@@ -73,9 +75,11 @@ function AdminPage() {
   const [savingAdmin, setSavingAdmin] = useState(false);
   const [subs, setSubs] = useState<Submission[]>([]);
   const [wds, setWds] = useState<Withdrawal[]>([]);
+  const [members, setMembers] = useState<MemberRow[]>([]);
   const [tab, setTab] = useState<"setoran" | "penarikan">("setoran");
   const [search, setSearch] = useState("");
-  const [section, setSection] = useState<"transaksi" | "pengaturan" | "admin">("transaksi");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [section, setSection] = useState<"transaksi" | "member" | "pengaturan" | "admin">("transaksi");
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
@@ -91,7 +95,7 @@ function AdminPage() {
     const admin = !!roles && roles.length > 0;
     setIsAdmin(admin);
     if (!admin) return;
-    const [s, w, st] = await Promise.all([
+    const [s, w, st, m] = await Promise.all([
       supabase
         .from("gmail_submissions")
         .select("id, gmail_address, password, status, rate, created_at")
@@ -106,9 +110,14 @@ function AdminPage() {
         .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open")
         .eq("id", "global")
         .maybeSingle(),
+      listMembers().catch<MemberRow[]>((err) => {
+        toast.error(err instanceof Error ? err.message : "Gagal memuat daftar member");
+        return [];
+      }),
     ]);
     setSubs((s.data as Submission[]) ?? []);
     setWds((w.data as Withdrawal[]) ?? []);
+    setMembers(m);
     if (st.data) {
       setRate(String(st.data.rate));
       setMinWithdraw(String(st.data.min_withdraw));
@@ -236,8 +245,13 @@ function AdminPage() {
   const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
+  const memberQuery = memberSearch.trim().toLowerCase();
+  const filteredMembers = memberQuery
+    ? members.filter((m) => m.email.toLowerCase().includes(memberQuery) || m.display_name.toLowerCase().includes(memberQuery))
+    : members;
   const navItems = [
     { id: "transaksi" as const, label: "Transaksi", icon: WalletCards },
+    { id: "member" as const, label: "Member", icon: Users },
     { id: "pengaturan" as const, label: "Pengaturan", icon: Settings },
     { id: "admin" as const, label: "Admin", icon: UserCog },
   ];
@@ -268,9 +282,42 @@ function AdminPage() {
             <button type="button" onClick={() => { setSection("transaksi"); setTab("penarikan"); }} className="rounded-3xl border border-border bg-card p-5 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-3xl">{pendingWds}</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Penarikan aktif</p></button>
           </section>
 
-          <nav className="grid grid-cols-3 gap-2" aria-label="Menu admin">
+          <nav className="grid grid-cols-4 gap-2" aria-label="Menu admin">
             {navItems.map(({ id, label, icon: Icon }) => <Button key={id} type="button" variant="ghost" onClick={() => setSection(id)} className={`h-auto min-w-0 flex-col gap-2 rounded-2xl px-2 py-3 ${section === id ? "bg-admin-primary-soft text-admin-primary" : "text-muted-foreground hover:bg-muted"}`}><Icon className="size-5" /><span className="text-[11px] font-bold">{label}</span></Button>)}
           </nav>
+
+          {section === "member" && <section className="space-y-4">
+            <div className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <div><h2 className="font-admin-heading text-base">Daftar member</h2><p className="mt-1 text-xs text-muted-foreground">Semua akun yang terdaftar di AyroGmail.</p></div>
+              <span className="shrink-0 rounded-full bg-admin-primary-soft px-3 py-1 text-[10px] font-bold uppercase text-admin-primary">{members.length} member</span>
+            </div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Cari nama / Gmail member..."
+                className="h-12 w-full rounded-2xl border border-border bg-card pl-11 pr-11 text-sm text-foreground outline-none transition focus:border-admin-primary focus:ring-2 focus:ring-admin-primary-soft"
+              />
+              {memberSearch && <button type="button" onClick={() => setMemberSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label="Bersihkan pencarian member"><X className="size-4" /></button>}
+            </div>
+            {filteredMembers.length === 0 ? <EmptyState text={memberSearch ? "Tidak ada member yang cocok dengan pencarian." : "Belum ada member terdaftar."} /> : filteredMembers.map((m) => <article key={m.user_id} className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="truncate font-admin-heading text-base">{m.display_name}</h3>
+                  <p className="mt-1 truncate text-xs text-muted-foreground">{m.email}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Bergabung {new Date(m.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</p>
+                </div>
+                {m.user_id === session.user.id && <span className="shrink-0 rounded-full bg-admin-primary-soft px-3 py-1 text-[10px] font-bold uppercase text-admin-primary">Anda</span>}
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-2xl bg-muted p-3"><p className="font-admin-heading text-lg">{m.total_subs}</p><p className="text-[10px] font-semibold text-muted-foreground">Setoran</p></div>
+                <div className="rounded-2xl bg-muted p-3"><p className="font-admin-heading text-lg">{m.approved_subs}</p><p className="text-[10px] font-semibold text-muted-foreground">Disetujui</p></div>
+                <div className="rounded-2xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{formatRupiah(m.earned)}</p><p className="text-[10px] font-semibold text-admin-success">Didapat</p></div>
+              </div>
+            </article>)}
+          </section>}
 
           {section === "transaksi" && <section className="space-y-4">
             <div className="grid grid-cols-2 rounded-2xl bg-muted p-1"><Button type="button" variant="ghost" onClick={() => setTab("setoran")} className={`rounded-xl ${tab === "setoran" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><Clipboard />Setoran</Button><Button type="button" variant="ghost" onClick={() => setTab("penarikan")} className={`rounded-xl ${tab === "penarikan" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><WalletCards />Penarikan</Button></div>
