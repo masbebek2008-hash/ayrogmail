@@ -82,6 +82,7 @@ function AdminPage() {
   const [memberSearch, setMemberSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [section, setSection] = useState<"transaksi" | "member" | "pengaturan" | "admin">("transaksi");
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
