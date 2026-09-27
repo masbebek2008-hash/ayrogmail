@@ -249,15 +249,42 @@ function AdminPage() {
     const m = memberById.get(userId);
     return m ? `${m.display_name} (${m.email})` : "Member";
   };
+  const jakartaDay = (iso: string) => new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Asia/Jakarta" });
+  const rangeFilteredSubs = subs.filter((s) => {
+    const day = jakartaDay(s.created_at);
+    if (dateFrom && day < dateFrom) return false;
+    if (dateTo && day > dateTo) return false;
+    return true;
+  });
+  const rangeHasFilter = !!dateFrom || !!dateTo;
+  const rangeApproved = rangeFilteredSubs.filter((s) => s.status === "disetujui");
+  const rangeTotalRp = rangeApproved.reduce((sum, s) => sum + s.rate, 0);
+  const memberRangeAgg = new Map<string, { total: number; approved: number; earned: number }>();
+  for (const s of rangeFilteredSubs) {
+    const agg = memberRangeAgg.get(s.user_id) ?? { total: 0, approved: 0, earned: 0 };
+    agg.total += 1;
+    if (s.status === "disetujui") {
+      agg.approved += 1;
+      agg.earned += s.rate;
+    }
+    memberRangeAgg.set(s.user_id, agg);
+  }
+  const memberRangeList = [...memberRangeAgg.entries()].sort((a, b) => b[1].total - a[1].total || b[1].earned - a[1].earned);
+  const fmtFilterDate = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  const rangeLabel = dateFrom && dateTo
+    ? `${fmtFilterDate(dateFrom)} – ${fmtFilterDate(dateTo)}`
+    : dateFrom
+      ? `Sejak ${fmtFilterDate(dateFrom)}`
+      : `Sampai ${fmtFilterDate(dateTo)}`;
   const filteredSubs = query
-    ? subs.filter((s) => {
+    ? rangeFilteredSubs.filter((s) => {
         const m = memberById.get(s.user_id);
         return (
           s.gmail_address.toLowerCase().includes(query) ||
           (m && (m.display_name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query)))
         );
       })
-    : subs;
+    : rangeFilteredSubs;
   const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
