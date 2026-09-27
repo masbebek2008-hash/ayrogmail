@@ -80,6 +80,8 @@ function AdminPage() {
   const [tab, setTab] = useState<"setoran" | "penarikan">("setoran");
   const [search, setSearch] = useState("");
   const [memberSearch, setMemberSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [section, setSection] = useState<"transaksi" | "member" | "pengaturan" | "admin">("transaksi");
 
   useEffect(() => {
@@ -247,15 +249,42 @@ function AdminPage() {
     const m = memberById.get(userId);
     return m ? `${m.display_name} (${m.email})` : "Member";
   };
+  const jakartaDay = (iso: string) => new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Asia/Jakarta" });
+  const rangeFilteredSubs = subs.filter((s) => {
+    const day = jakartaDay(s.created_at);
+    if (dateFrom && day < dateFrom) return false;
+    if (dateTo && day > dateTo) return false;
+    return true;
+  });
+  const rangeHasFilter = !!dateFrom || !!dateTo;
+  const rangeApproved = rangeFilteredSubs.filter((s) => s.status === "disetujui");
+  const rangeTotalRp = rangeApproved.reduce((sum, s) => sum + s.rate, 0);
+  const memberRangeAgg = new Map<string, { total: number; approved: number; earned: number }>();
+  for (const s of rangeFilteredSubs) {
+    const agg = memberRangeAgg.get(s.user_id) ?? { total: 0, approved: 0, earned: 0 };
+    agg.total += 1;
+    if (s.status === "disetujui") {
+      agg.approved += 1;
+      agg.earned += s.rate;
+    }
+    memberRangeAgg.set(s.user_id, agg);
+  }
+  const memberRangeList = [...memberRangeAgg.entries()].sort((a, b) => b[1].total - a[1].total || b[1].earned - a[1].earned);
+  const fmtFilterDate = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  const rangeLabel = dateFrom && dateTo
+    ? `${fmtFilterDate(dateFrom)} – ${fmtFilterDate(dateTo)}`
+    : dateFrom
+      ? `Sejak ${fmtFilterDate(dateFrom)}`
+      : `Sampai ${fmtFilterDate(dateTo)}`;
   const filteredSubs = query
-    ? subs.filter((s) => {
+    ? rangeFilteredSubs.filter((s) => {
         const m = memberById.get(s.user_id);
         return (
           s.gmail_address.toLowerCase().includes(query) ||
           (m && (m.display_name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query)))
         );
       })
-    : subs;
+    : rangeFilteredSubs;
   const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
@@ -346,7 +375,31 @@ function AdminPage() {
               />
               {search && <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label="Bersihkan pencarian"><X className="size-4" /></button>}
             </div>
-            {tab === "setoran" && (filteredSubs.length === 0 ? <EmptyState text={search ? "Tidak ada Gmail yang cocok dengan pencarian." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 truncate text-xs font-medium text-admin-primary">Storan: {memberLabel(s.user_id)}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => setSubStatus(s.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button></article>))}
+            {tab === "setoran" && <div className="space-y-4">
+              <div className="space-y-3 rounded-3xl border border-border bg-card p-4 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase text-muted-foreground">Rentang tanggal</p>
+                  {(dateFrom || dateTo) && <button type="button" onClick={() => { setDateFrom(""); setDateTo(""); }} className="rounded-full bg-muted px-3 py-1 text-[10px] font-bold uppercase text-muted-foreground hover:text-foreground">Reset</button>}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-xs font-semibold text-muted-foreground">Dari<input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={`${inputClass} mt-1`} /></label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Sampai<input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={`${inputClass} mt-1`} /></label>
+                </div>
+              </div>
+              {rangeHasFilter && (rangeFilteredSubs.length === 0 ? <EmptyState text="Tidak ada setoran pada rentang tanggal ini." /> : <div className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-sm">
+                <div><h2 className="font-admin-heading text-base">Ringkasan periode</h2><p className="mt-1 text-xs text-muted-foreground">{rangeLabel}</p></div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-2xl bg-muted p-3"><p className="font-admin-heading text-lg">{rangeFilteredSubs.length}</p><p className="text-[10px] font-semibold text-muted-foreground">Setoran</p></div>
+                  <div className="rounded-2xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{rangeApproved.length}</p><p className="text-[10px] font-semibold text-admin-success">Disetujui</p></div>
+                  <div className="rounded-2xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{formatRupiah(rangeTotalRp)}</p><p className="text-[10px] font-semibold text-admin-success">Nilai</p></div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Per member</p>
+                  {memberRangeList.map(([uid, agg]) => <div key={uid} className="flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-2"><p className="min-w-0 truncate text-xs font-semibold">{memberLabel(uid)}</p><p className="shrink-0 text-xs text-muted-foreground">{agg.total} setoran{agg.approved > 0 ? ` · ${formatRupiah(agg.earned)}` : ""}</p></div>)}
+                </div>
+              </div>)}
+              {filteredSubs.length === 0 ? <EmptyState text={query ? "Tidak ada Gmail yang cocok dengan pencarian." : rangeHasFilter ? "Tidak ada setoran pada rentang tanggal ini." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 truncate text-xs font-medium text-admin-primary">Storan: {memberLabel(s.user_id)}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => setSubStatus(s.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button></article>)}
+            </div>}
             {tab === "penarikan" && (filteredWds.length === 0 ? <EmptyState text={search ? "Tidak ada penarikan yang cocok dengan pencarian." : "Belum ada penarikan."} /> : filteredWds.map((w) => <article key={w.id} className="space-y-5 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
           </section>}
 
