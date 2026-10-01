@@ -271,6 +271,7 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("DANA");
   const [account, setAccount] = useState("");
+  const [accName, setAccName] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -281,13 +282,14 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
     if (value > saldo) { toast.error("Jumlah melebihi saldo Anda"); return; }
     if (adminFee > 0 && value <= adminFee) { toast.error(`Jumlah harus lebih besar dari biaya admin ${formatRupiah(adminFee)}`); return; }
     if (!account.trim()) { toast.error("Isi nomor tujuan"); return; }
+    if (!accName.trim()) { toast.error("Isi nama pemilik rekening"); return; }
     setBusy(true);
     const { data: userData } = await supabase.auth.getUser();
     const { error } = await supabase.from("withdrawals").insert({
       user_id: userData.user!.id,
       amount: value,
       method,
-      account_info: account.trim(),
+      account_info: `${account.trim()} (a.n. ${accName.trim()})`,
     });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
@@ -325,9 +327,17 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
         </select>
         <input
           type="text"
+          inputMode="numeric"
           placeholder="Nomor / rekening tujuan"
           value={account}
           onChange={(e) => setAccount(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+        />
+        <input
+          type="text"
+          placeholder="Nama pemilik rekening"
+          value={accName}
+          onChange={(e) => setAccName(e.target.value)}
           className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
         />
         <button
