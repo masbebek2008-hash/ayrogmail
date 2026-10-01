@@ -354,51 +354,16 @@ function parseGmailList(text: string): string[] {
 
 function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: number; dailyLimit: number; todayCount: number; onClose: () => void; onDone: () => void }) {
   const [pasteText, setPasteText] = useState("");
-  const [gmails, setGmails] = useState<string[]>([]);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const gmails = Array.from(new Set(parseGmailList(pasteText)));
 
   const remaining = dailyLimit > 0 ? Math.max(0, dailyLimit - todayCount) : Infinity;
-
-  const applyPaste = () => {
-    const list = parseGmailList(pasteText);
-    if (list.length === 0) {
-      toast.error("Tidak ada alamat Gmail terdeteksi");
-      return;
-    }
-    if (dailyLimit > 0 && list.length > remaining) {
-      toast.error(`Melebihi sisa jatah hari ini (${remaining} Gmail)`);
-      return;
-    }
-    const seen = new Set<string>();
-    const unique: string[] = [];
-    for (const addr of list) {
-      if (!seen.has(addr)) {
-        seen.add(addr);
-        unique.push(addr);
-      }
-    }
-    setGmails((prev) => {
-      const existing = new Set(prev);
-      const added = unique.filter((a) => !existing.has(a));
-      if (added.length === 0) {
-        toast.info("Semua Gmail sudah dimuat sebelumnya");
-        return prev;
-      }
-      toast.success(`${added.length} Gmail dimuat`);
-      return [...prev, ...added];
-    });
-    setPasteText("");
-  };
-
-  const removeGmail = (addr: string) => {
-    setGmails((prev) => prev.filter((g) => g !== addr));
-  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (gmails.length === 0) {
-      toast.error("Belum ada Gmail. Paste alamat dulu di kotak atas.");
+      toast.error("Belum ada Gmail. Masukkan alamat Gmail dulu.");
       return;
     }
     if (!password) {
@@ -444,66 +409,29 @@ function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: 
         )}
       </p>
       <form onSubmit={submit} className="space-y-3">
-        {/* Bulk paste area */}
-        <div className="rounded-xl border border-gray-200 p-3 space-y-2">
+        <div className="space-y-1">
           <label className="text-xs font-medium text-gray-500 block">
-            Paste alamat Gmail di sini (boleh banyak baris / dipisah spasi/koma)
+            Alamat Gmail (1 baris 1 Gmail)
           </label>
           <textarea
             placeholder={"alamat1@gmail.com\nalamat2@gmail.com\nalamat3@gmail.com"}
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
-            rows={4}
-            className="w-full px-3 py-2.5 rounded-lg bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300 resize-y font-mono"
+            rows={6}
+            className="w-full px-3 py-2.5 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300 resize-y font-mono"
           />
-          <button
-            type="button"
-            onClick={applyPaste}
-            className="w-full bg-[var(--ink)] text-white font-medium py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
-          >
-            Muat Gmail
-          </button>
+          {gmails.length > 0 && (
+            <p className="text-xs text-gray-500 px-1">{gmails.length} Gmail terdeteksi</p>
+          )}
         </div>
 
-        {/* Single shared password */}
-        {gmails.length > 0 && (
-          <input
-            type="text"
-            placeholder="Password (satu untuk semua Gmail, huruf kecil semua)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
-          />
-        )}
-
-        {/* Loaded Gmail list */}
-        {gmails.length > 0 && (
-          <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-medium text-gray-500">{gmails.length} Gmail dimuat</span>
-              <button
-                type="button"
-                onClick={() => setGmails([])}
-                className="text-xs text-red-500 hover:text-red-700"
-              >
-                Hapus semua
-              </button>
-            </div>
-            {gmails.map((gmail, i) => (
-              <div key={gmail} className="flex items-center justify-between gap-2 rounded-xl border border-gray-200 px-3 py-2.5">
-                <span className="text-xs text-gray-400 shrink-0">#{i + 1}</span>
-                <p className="text-sm text-gray-800 font-medium truncate flex-1">{gmail}</p>
-                <button
-                  type="button"
-                  onClick={() => removeGmail(gmail)}
-                  className="text-xs text-red-500 hover:text-red-700 shrink-0"
-                >
-                  Hapus
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <input
+          type="text"
+          placeholder="Password (satu untuk semua Gmail, huruf kecil semua)"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+        />
 
         <p className="text-[11px] text-gray-400 leading-relaxed">
           Password wajib huruf kecil semua. Huruf besar otomatis ditolak. Password dipakai untuk semua Gmail di daftar.
