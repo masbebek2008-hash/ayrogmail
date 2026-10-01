@@ -321,10 +321,7 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
           className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
         >
           <option>DANA</option>
-          <option>OVO</option>
           <option>GoPay</option>
-          <option>ShopeePay</option>
-          <option>Transfer Bank</option>
         </select>
         <input
           type="text"
