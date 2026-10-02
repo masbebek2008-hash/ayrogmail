@@ -134,9 +134,11 @@ function Dashboard() {
         </header>
 
         {/* Main */}
-        <main className="flex-1 px-4 py-6 space-y-4 overflow-y-auto pb-24 scrollbar-thin">
+        <main className="flex-1 px-4 md:px-8 py-6 md:py-8 pb-24 overflow-y-auto scrollbar-thin">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 md:items-start">
+          <div className="md:col-span-7 lg:col-span-8 space-y-4 md:space-y-6">
           {/* Balance card */}
-          <div className="bg-[var(--ink)] text-white rounded-[1.5rem] p-6 shadow-md relative overflow-hidden">
+          <div className="bg-[var(--ink)] text-white rounded-[1.5rem] md:rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden">
             <p className="text-sm text-gray-300 mb-1 truncate">Halo, {displayName}</p>
             <div className="flex items-center gap-2 mb-2 text-gray-400 text-sm">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -146,11 +148,11 @@ function Dashboard() {
               </svg>
               Saldo Anda
             </div>
-            <h2 className="text-[2.5rem] font-bold leading-none mb-6">{formatRupiah(stats.saldo)}</h2>
+            <h2 className="text-[2.5rem] md:text-5xl font-bold leading-none mb-6 md:mb-8">{formatRupiah(stats.saldo)}</h2>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowWithdraw(true)}
-                className="bg-white text-gray-900 px-5 py-2.5 rounded-full font-medium text-sm flex items-center gap-2 hover:bg-gray-100 transition-colors active:scale-95"
+                className="bg-white text-gray-900 px-5 md:px-6 py-2.5 rounded-full font-medium text-sm md:text-base flex items-center gap-2 hover:bg-gray-100 transition-colors active:scale-95"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -160,7 +162,7 @@ function Dashboard() {
               </button>
               <Link
                 to="/riwayat"
-                className="bg-transparent border border-gray-500 text-white px-5 py-2.5 rounded-full font-medium text-sm flex items-center gap-2 hover:bg-gray-700 transition-colors active:scale-95"
+                className="bg-transparent border border-gray-500 text-white px-5 md:px-6 py-2.5 rounded-full font-medium text-sm md:text-base flex items-center gap-2 hover:bg-gray-700 transition-colors active:scale-95"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
@@ -173,21 +175,32 @@ function Dashboard() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-xs text-gray-500 mb-1">Menunggu</p>
-              <p className="text-xl font-bold text-gray-800">{stats.menunggu}</p>
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
+            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center mb-2">
+                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{stats.menunggu}</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase mt-0.5">Menunggu</p>
             </div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-xs text-gray-500 mb-1">Disetujui</p>
-              <p className="text-xl font-bold text-gray-800">{stats.disetujui}</p>
+            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center mb-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{stats.disetujui}</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase mt-0.5">Disetujui</p>
             </div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-xs text-gray-500 mb-1">Ditolak</p>
-              <p className="text-xl font-bold text-red-500">{stats.ditolak}</p>
+            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center mb-2">
+                <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+              </div>
+              <p className="text-2xl font-bold text-red-500">{stats.ditolak}</p>
+              <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase mt-0.5">Ditolak</p>
             </div>
           </div>
+          </div>
 
+          <div className="md:col-span-5 lg:col-span-4 space-y-4 md:space-y-6">
           {/* Pilih password */}
           <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-4">
