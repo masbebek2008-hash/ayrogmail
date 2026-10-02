@@ -215,6 +215,17 @@ function AdminPage() {
     toast.success("Status diperbarui");
   };
 
+  const copyAllSubs = async () => {
+    if (filteredSubs.length === 0) { toast.error("Tidak ada setoran untuk disalin"); return; }
+    const text = filteredSubs.map((s) => `${s.gmail_address}:${s.password}`).join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${filteredSubs.length} setoran disalin`);
+    } catch {
+      toast.error("Gagal menyalin ke papan klip");
+    }
+  };
+
   const deleteSub = async (id: string) => {
     if (!window.confirm("Sembunyikan Gmail ini dari panel admin? Riwayat member tetap tersimpan.")) return;
     const { error } = await supabase.from("gmail_submissions").update({ hidden_from_admin: true }).eq("id", id);
