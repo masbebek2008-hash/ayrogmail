@@ -21,7 +21,7 @@ export const Route = createFileRoute("/")({
 type Submission = { id: string; status: "menunggu" | "disetujui" | "ditolak"; rate: number; created_at: string };
 type Withdrawal = { id: string; amount: number; status: string };
 
-type Settings = { rate: number; min_withdraw: number; admin_fee: number; daily_submission_limit: number; submissions_open: boolean };
+type Settings = { rate: number; min_withdraw: number; admin_fee: number; daily_submission_limit: number; submissions_open: boolean; member_password: string };
 
 function formatRupiah(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
@@ -41,6 +41,7 @@ function Dashboard() {
     admin_fee: 0,
     daily_submission_limit: 0,
     submissions_open: true,
+    member_password: "",
   });
 
   useEffect(() => {
@@ -56,7 +57,7 @@ function Dashboard() {
       supabase.from("withdrawals").select("id, amount, status").eq("user_id", uid),
       supabase
         .from("app_settings")
-        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open")
+        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open, member_password")
         .eq("id", "global")
         .maybeSingle(),
     ]);
