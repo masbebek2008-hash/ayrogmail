@@ -102,7 +102,7 @@ function Dashboard() {
 
   return (
     <div className="text-slate-800 antialiased flex justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md bg-[var(--app-bg)] min-h-screen shadow-2xl relative flex flex-col">
+      <div className="w-full max-w-md md:max-w-5xl bg-[var(--app-bg)] min-h-screen shadow-2xl relative flex flex-col">
         {/* Header */}
         <header className="bg-white flex items-center justify-between px-5 py-4 sticky top-0 z-20 shadow-sm">
           <div className="flex items-center gap-3">
