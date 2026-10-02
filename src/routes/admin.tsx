@@ -69,6 +69,7 @@ function AdminPage() {
   const [minWithdraw, setMinWithdraw] = useState("");
   const [adminFee, setAdminFee] = useState("");
   const [dailyLimit, setDailyLimit] = useState("");
+  const [memberPassword, setMemberPassword] = useState("");
   const [submissionsOpen, setSubmissionsOpen] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
   const [admins, setAdmins] = useState<{ user_id: string; email: string }[]>([]);
@@ -110,7 +111,7 @@ function AdminPage() {
         .order("created_at", { ascending: false }),
       supabase
         .from("app_settings")
-        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open")
+        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open, member_password")
         .eq("id", "global")
         .maybeSingle(),
       listMembers().catch<MemberRow[]>((err) => {
@@ -127,6 +128,7 @@ function AdminPage() {
       setAdminFee(String(st.data.admin_fee));
       setDailyLimit(String(st.data.daily_submission_limit));
       setSubmissionsOpen(st.data.submissions_open);
+      setMemberPassword(st.data.member_password ?? "");
     }
     try {
       setAdmins(await listAdmins());
@@ -157,6 +159,7 @@ function AdminPage() {
         min_withdraw: m,
         admin_fee: fee,
         daily_submission_limit: limit,
+        member_password: memberPassword.trim().toLowerCase(),
         updated_at: new Date().toISOString(),
       })
       .eq("id", "global");
@@ -403,7 +406,7 @@ function AdminPage() {
             {tab === "penarikan" && (filteredWds.length === 0 ? <EmptyState text={search ? "Tidak ada penarikan yang cocok dengan pencarian." : "Belum ada penarikan."} /> : filteredWds.map((w) => <article key={w.id} className="space-y-5 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
           </section>}
 
-          {section === "pengaturan" && <section className="space-y-4"><form onSubmit={saveSettings} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div><h2 className="font-admin-heading text-base">Pengaturan transaksi</h2><p className="mt-1 text-xs text-muted-foreground">Atur tarif dan batas transaksi member.</p></div>{[["Tarif per Gmail (Rp)",rate,setRate],["Saldo minimal penarikan (Rp)",minWithdraw,setMinWithdraw],["Biaya admin per penarikan (Rp)",adminFee,setAdminFee],["Batas setoran Gmail per hari (0 = tanpa batas)",dailyLimit,setDailyLimit]] .map(([label,value,setter]) => <label key={label as string} className="block text-xs font-semibold text-muted-foreground">{label as string}<input type="text" inputMode="numeric" value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} className={inputClass} /></label>)}<Button type="submit" disabled={savingSettings} className="h-12 w-full rounded-2xl bg-admin-primary text-primary-foreground hover:bg-admin-primary/90">{savingSettings ? "Menyimpan..." : "Simpan pengaturan"}</Button></form></section>}
+          {section === "pengaturan" && <section className="space-y-4"><form onSubmit={saveSettings} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div><h2 className="font-admin-heading text-base">Pengaturan transaksi</h2><p className="mt-1 text-xs text-muted-foreground">Atur tarif dan batas transaksi member.</p></div>{[["Tarif per Gmail (Rp)",rate,setRate],["Saldo minimal penarikan (Rp)",minWithdraw,setMinWithdraw],["Biaya admin per penarikan (Rp)",adminFee,setAdminFee],["Batas setoran Gmail per hari (0 = tanpa batas)",dailyLimit,setDailyLimit],["Password setoran untuk member (huruf kecil, kosongkan bila member isi sendiri)",memberPassword,setMemberPassword]] .map(([label,value,setter]) => <label key={label as string} className="block text-xs font-semibold text-muted-foreground">{label as string}<input type="text" inputMode={label==="Password setoran untuk member (huruf kecil, kosongkan bila member isi sendiri)"?undefined:"numeric"} value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} className={inputClass} /></label>)}<Button type="submit" disabled={savingSettings} className="h-12 w-full rounded-2xl bg-admin-primary text-primary-foreground hover:bg-admin-primary/90">{savingSettings ? "Menyimpan..." : "Simpan pengaturan"}</Button></form></section>}
 
           {section === "admin" && <section className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div><h2 className="font-admin-heading text-base">Daftar admin</h2><p className="mt-1 text-xs text-muted-foreground">Kelola siapa yang dapat membuka panel ini.</p></div><form onSubmit={addAdmin} className="space-y-3"><input type="email" value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)} placeholder="email akun terdaftar" className={inputClass} /><Button type="submit" disabled={savingAdmin} className="h-11 w-full rounded-2xl bg-admin-primary text-primary-foreground hover:bg-admin-primary/90">{savingAdmin ? "Menambahkan..." : "Tambah admin"}</Button></form>{admins.length === 0 ? <EmptyState text="Belum ada admin terdaftar." /> : <ul className="space-y-2">{admins.map((a) => <li key={a.user_id} className="flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{a.email}</p>{a.user_id === session.user.id && <p className="text-xs text-admin-primary">Akun Anda</p>}</div>{a.user_id !== session.user.id && <Button type="button" size="sm" variant="ghost" onClick={() => deleteAdmin(a.user_id)} className="rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger">Cabut</Button>}</li>)}</ul>}</section>}
         </main>

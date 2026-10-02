@@ -19,6 +19,7 @@ export type Database = {
           admin_fee: number
           daily_submission_limit: number
           id: string
+          member_password: string
           min_withdraw: number
           rate: number
           submissions_open: boolean
@@ -28,6 +29,7 @@ export type Database = {
           admin_fee?: number
           daily_submission_limit?: number
           id?: string
+          member_password?: string
           min_withdraw?: number
           rate?: number
           submissions_open?: boolean
@@ -37,6 +39,7 @@ export type Database = {
           admin_fee?: number
           daily_submission_limit?: number
           id?: string
+          member_password?: string
           min_withdraw?: number
           rate?: number
           submissions_open?: boolean

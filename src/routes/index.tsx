@@ -21,7 +21,7 @@ export const Route = createFileRoute("/")({
 type Submission = { id: string; status: "menunggu" | "disetujui" | "ditolak"; rate: number; created_at: string };
 type Withdrawal = { id: string; amount: number; status: string };
 
-type Settings = { rate: number; min_withdraw: number; admin_fee: number; daily_submission_limit: number; submissions_open: boolean };
+type Settings = { rate: number; min_withdraw: number; admin_fee: number; daily_submission_limit: number; submissions_open: boolean; member_password: string };
 
 function formatRupiah(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
@@ -41,6 +41,7 @@ function Dashboard() {
     admin_fee: 0,
     daily_submission_limit: 0,
     submissions_open: true,
+    member_password: "",
   });
 
   useEffect(() => {
@@ -56,7 +57,7 @@ function Dashboard() {
       supabase.from("withdrawals").select("id, amount, status").eq("user_id", uid),
       supabase
         .from("app_settings")
-        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open")
+        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open, member_password")
         .eq("id", "global")
         .maybeSingle(),
     ]);
@@ -255,6 +256,7 @@ function Dashboard() {
             rate={settings.rate}
             dailyLimit={settings.daily_submission_limit}
             todayCount={stats.hariIni}
+            memberPassword={settings.member_password}
             onClose={() => setShowSubmit(false)}
             onDone={() => {
               setShowSubmit(false);
@@ -359,9 +361,9 @@ function parseGmailList(text: string): string[] {
     .filter((s) => s.length > 0);
 }
 
-function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: number; dailyLimit: number; todayCount: number; onClose: () => void; onDone: () => void }) {
+function SubmitModal({ rate, dailyLimit, todayCount, memberPassword, onClose, onDone }: { rate: number; dailyLimit: number; todayCount: number; memberPassword: string; onClose: () => void; onDone: () => void }) {
   const [pasteText, setPasteText] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(memberPassword);
   const [busy, setBusy] = useState(false);
   const gmails = Array.from(new Set(parseGmailList(pasteText)));
 
@@ -432,16 +434,21 @@ function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: 
           )}
         </div>
 
-        <input
-          type="text"
-          placeholder="Password (satu untuk semua Gmail, huruf kecil semua)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
-        />
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-gray-500 block">Password (satu untuk semua Gmail)</label>
+          <input
+            type="text"
+            placeholder="Password (huruf kecil semua)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+          />
+        </div>
 
         <p className="text-[11px] text-gray-400 leading-relaxed">
-          Password wajib huruf kecil semua. Huruf besar otomatis ditolak. Password dipakai untuk semua Gmail di daftar.
+          {memberPassword
+            ? "Password sudah diisi otomatis oleh admin. Langsung kirim saja, tidak perlu diubah."
+            : "Password wajib huruf kecil semua. Huruf besar otomatis ditolak. Password dipakai untuk semua Gmail di daftar."}
         </p>
         <button
           type="submit"
