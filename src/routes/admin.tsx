@@ -69,6 +69,7 @@ function AdminPage() {
   const [minWithdraw, setMinWithdraw] = useState("");
   const [adminFee, setAdminFee] = useState("");
   const [dailyLimit, setDailyLimit] = useState("");
+  const [memberPassword, setMemberPassword] = useState("");
   const [submissionsOpen, setSubmissionsOpen] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
   const [admins, setAdmins] = useState<{ user_id: string; email: string }[]>([]);
@@ -110,7 +111,7 @@ function AdminPage() {
         .order("created_at", { ascending: false }),
       supabase
         .from("app_settings")
-        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open")
+        .select("rate, min_withdraw, admin_fee, daily_submission_limit, submissions_open, member_password")
         .eq("id", "global")
         .maybeSingle(),
       listMembers().catch<MemberRow[]>((err) => {
@@ -127,6 +128,7 @@ function AdminPage() {
       setAdminFee(String(st.data.admin_fee));
       setDailyLimit(String(st.data.daily_submission_limit));
       setSubmissionsOpen(st.data.submissions_open);
+      setMemberPassword(st.data.member_password ?? "");
     }
     try {
       setAdmins(await listAdmins());
@@ -157,6 +159,7 @@ function AdminPage() {
         min_withdraw: m,
         admin_fee: fee,
         daily_submission_limit: limit,
+        member_password: memberPassword.trim().toLowerCase(),
         updated_at: new Date().toISOString(),
       })
       .eq("id", "global");
