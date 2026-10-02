@@ -256,6 +256,7 @@ function Dashboard() {
             rate={settings.rate}
             dailyLimit={settings.daily_submission_limit}
             todayCount={stats.hariIni}
+            memberPassword={settings.member_password}
             onClose={() => setShowSubmit(false)}
             onDone={() => {
               setShowSubmit(false);
@@ -360,9 +361,9 @@ function parseGmailList(text: string): string[] {
     .filter((s) => s.length > 0);
 }
 
-function SubmitModal({ rate, dailyLimit, todayCount, onClose, onDone }: { rate: number; dailyLimit: number; todayCount: number; onClose: () => void; onDone: () => void }) {
+function SubmitModal({ rate, dailyLimit, todayCount, memberPassword, onClose, onDone }: { rate: number; dailyLimit: number; todayCount: number; memberPassword: string; onClose: () => void; onDone: () => void }) {
   const [pasteText, setPasteText] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(memberPassword);
   const [busy, setBusy] = useState(false);
   const gmails = Array.from(new Set(parseGmailList(pasteText)));
 
