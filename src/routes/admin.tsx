@@ -215,6 +215,17 @@ function AdminPage() {
     toast.success("Status diperbarui");
   };
 
+  const copyAllSubs = async () => {
+    if (filteredSubs.length === 0) { toast.error("Tidak ada setoran untuk disalin"); return; }
+    const text = filteredSubs.map((s) => `${s.gmail_address}:${s.password}`).join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${filteredSubs.length} setoran disalin`);
+    } catch {
+      toast.error("Gagal menyalin ke papan klip");
+    }
+  };
+
   const deleteSub = async (id: string) => {
     if (!window.confirm("Sembunyikan Gmail ini dari panel admin? Riwayat member tetap tersimpan.")) return;
     const { error } = await supabase.from("gmail_submissions").update({ hidden_from_admin: true }).eq("id", id);
@@ -379,6 +390,7 @@ function AdminPage() {
               {search && <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label="Bersihkan pencarian"><X className="size-4" /></button>}
             </div>
             {tab === "setoran" && <div className="space-y-4">
+              <Button type="button" onClick={copyAllSubs} className="h-12 w-full rounded-2xl bg-admin-primary text-primary-foreground hover:bg-admin-primary/90"><Copy />Salin semua setoran{filteredSubs.length > 0 ? ` (${filteredSubs.length})` : ""}</Button>
               <div className="space-y-3 rounded-3xl border border-border bg-card p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs font-bold uppercase text-muted-foreground">Rentang tanggal</p>
