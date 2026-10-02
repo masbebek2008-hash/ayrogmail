@@ -434,16 +434,21 @@ function SubmitModal({ rate, dailyLimit, todayCount, memberPassword, onClose, on
           )}
         </div>
 
-        <input
-          type="text"
-          placeholder="Password (satu untuk semua Gmail, huruf kecil semua)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
-        />
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-gray-500 block">Password (satu untuk semua Gmail)</label>
+          <input
+            type="text"
+            placeholder="Password (huruf kecil semua)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+          />
+        </div>
 
         <p className="text-[11px] text-gray-400 leading-relaxed">
-          Password wajib huruf kecil semua. Huruf besar otomatis ditolak. Password dipakai untuk semua Gmail di daftar.
+          {memberPassword
+            ? "Password sudah diisi otomatis oleh admin. Langsung kirim saja, tidak perlu diubah."
+            : "Password wajib huruf kecil semua. Huruf besar otomatis ditolak. Password dipakai untuk semua Gmail di daftar."}
         </p>
         <button
           type="submit"
