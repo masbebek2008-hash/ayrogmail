@@ -19,6 +19,8 @@ type Submission = {
   status: "menunggu" | "disetujui" | "ditolak";
   rate: number;
   created_at: string;
+  rejection_reason?: string | null;
+  fix_guide?: string | null;
 };
 type Withdrawal = {
   id: string;
@@ -62,10 +64,10 @@ function RiwayatPage() {
     const uid = session.user.id;
     supabase
       .from("gmail_submissions")
-      .select("id, gmail_address, status, rate, created_at")
+      .select("id, gmail_address, status, rate, created_at, rejection_reason, fix_guide")
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
-      .then(({ data }) => setSubmissions((data as Submission[]) ?? []));
+      .then(({ data }) => setSubmissions((data as unknown as Submission[]) ?? []));
     supabase
       .from("withdrawals")
       .select("id, amount, method, status, created_at")
@@ -128,6 +130,12 @@ function RiwayatPage() {
                     <span>Rp {s.rate.toLocaleString("id-ID")}</span>
                     <span>{formatDate(s.created_at)}</span>
                   </div>
+                  {s.status === "ditolak" && (s.rejection_reason || s.fix_guide) && (
+                    <div className="mt-3 rounded-xl bg-red-50 p-3 text-xs text-gray-700 space-y-1">
+                      {s.rejection_reason && <p className="font-semibold text-red-600">Alasan ditolak: {s.rejection_reason}</p>}
+                      {s.fix_guide && <p className="whitespace-pre-line">{s.fix_guide}</p>}
+                    </div>
+                  )}
                 </div>
               ))
             ))}

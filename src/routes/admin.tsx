@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/use-session";
 import { addAdminByEmail, listAdmins, removeAdmin } from "@/lib/admin-users.functions";
 import { listMembers, type MemberRow } from "@/lib/members.functions";
+import { rejectWithGuide } from "@/lib/reject-guide.functions";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -44,6 +45,8 @@ type Submission = {
   status: string;
   rate: number;
   created_at: string;
+  rejection_reason?: string | null;
+  fix_guide?: string | null;
 };
 type Withdrawal = {
   id: string;
@@ -102,7 +105,7 @@ function AdminPage() {
     const [s, w, st, m] = await Promise.all([
       supabase
         .from("gmail_submissions")
-        .select("id, user_id, gmail_address, password, status, rate, created_at")
+        .select("id, user_id, gmail_address, password, status, rate, created_at, rejection_reason, fix_guide")
         .eq("hidden_from_admin", false)
         .order("created_at", { ascending: false }),
       supabase
@@ -119,7 +122,7 @@ function AdminPage() {
         return [];
       }),
     ]);
-    setSubs((s.data as Submission[]) ?? []);
+    setSubs((s.data as unknown as Submission[]) ?? []);
     setWds((w.data as Withdrawal[]) ?? []);
     setMembers(m);
     if (st.data) {
@@ -213,6 +216,19 @@ function AdminPage() {
     if (error) { toast.error(error.message); return; }
     setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)));
     toast.success("Status diperbarui");
+  };
+
+  const rejectSub = async (id: string) => {
+    const reason = window.prompt("Alasan penolakan (jangan tulis password/email/data rahasia):");
+    if (!reason || !reason.trim()) return;
+    const t = toast.loading("AI sedang menyusun panduan perbaikan...");
+    try {
+      const r = await rejectWithGuide({ data: { id, reason } });
+      setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, status: "ditolak", rejection_reason: r.reason, fix_guide: r.guide } : s)));
+      toast.success("Ditolak + panduan dikirim ke member", { id: t });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menolak", { id: t });
+    }
   };
 
   const copyAllSubs = async () => {
@@ -413,7 +429,7 @@ function AdminPage() {
                   {memberRangeList.map(([uid, agg]) => <div key={uid} className="flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-2"><p className="min-w-0 truncate text-xs font-semibold">{memberLabel(uid)}</p><p className="shrink-0 text-xs text-muted-foreground">{agg.total} setoran{agg.approved > 0 ? ` · ${formatRupiah(agg.earned)}` : ""}</p></div>)}
                 </div>
               </div>)}
-              {filteredSubs.length === 0 ? <EmptyState text={query ? "Tidak ada Gmail yang cocok dengan pencarian." : rangeHasFilter ? "Tidak ada setoran pada rentang tanggal ini." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 truncate text-xs font-medium text-admin-primary">Storan: {memberLabel(s.user_id)}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => setSubStatus(s.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button></article>)}
+              {filteredSubs.length === 0 ? <EmptyState text={query ? "Tidak ada Gmail yang cocok dengan pencarian." : rangeHasFilter ? "Tidak ada setoran pada rentang tanggal ini." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 truncate text-xs font-medium text-admin-primary">Storan: {memberLabel(s.user_id)}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => (st === "ditolak" ? rejectSub(s.id) : setSubStatus(s.id, st))} />)}</div>{s.status === "ditolak" && s.fix_guide && <div className="space-y-1 rounded-2xl bg-admin-danger-soft p-3 text-xs"><p className="font-bold text-admin-danger">Alasan: {s.rejection_reason}</p><p className="whitespace-pre-line text-foreground">{s.fix_guide}</p></div>}<Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button></article>)}
             </div>}
             {tab === "penarikan" && (filteredWds.length === 0 ? <EmptyState text={search ? "Tidak ada penarikan yang cocok dengan pencarian." : "Belum ada penarikan."} /> : filteredWds.map((w) => <article key={w.id} className="space-y-5 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
           </section>}
