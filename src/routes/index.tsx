@@ -235,6 +235,8 @@ function Dashboard() {
           >
             Saluran WhatsApp
           </a>
+          </div>
+          </div>
         </main>
 
         {/* Bottom nav */}
