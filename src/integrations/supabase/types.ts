@@ -50,31 +50,37 @@ export type Database = {
       gmail_submissions: {
         Row: {
           created_at: string
+          fix_guide: string | null
           gmail_address: string
           hidden_from_admin: boolean
           id: string
           password: string
           rate: number
+          rejection_reason: string | null
           status: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          fix_guide?: string | null
           gmail_address: string
           hidden_from_admin?: boolean
           id?: string
           password: string
           rate?: number
+          rejection_reason?: string | null
           status?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          fix_guide?: string | null
           gmail_address?: string
           hidden_from_admin?: boolean
           id?: string
           password?: string
           rate?: number
+          rejection_reason?: string | null
           status?: string
           user_id?: string
         }
