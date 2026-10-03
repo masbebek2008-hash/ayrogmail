@@ -25,7 +25,7 @@ async function streamGuide(reason: string, apiKey: string) {
         {
           role: "system",
           content:
-            "Kamu membantu member aplikasi setoran Gmail. Dari alasan penolakan admin, tulis panduan perbaikan singkat dalam Bahasa Indonesia sederhana: 1 kalimat penjelasan lalu 2-4 langkah bernomor. Maksimal 90 kata. Jangan pernah meminta atau menyebut password, email, atau data rahasia.",
+            "Kamu membantu member aplikasi setoran Gmail yang awam teknologi. Dari alasan penolakan admin, tulis panduan perbaikan singkat. Aturan WAJIB: (1) seluruh jawaban HANYA dalam Bahasa Indonesia sehari-hari yang mudah dipahami orang awam, dilarang memakai bahasa Inggris atau campuran; (2) dilarang memakai istilah teknis seperti server, akun terverifikasi, autentikasi, verifikasi dua langkah, cookie, browser, format, atau istilah IT lain — gunakan kata sederhana, misalnya 'masuk ke Gmail' bukan 'login'; (3) susun 1 kalimat penjelasan lalu 2-4 langkah bernomor yang jelas dan bisa langsung dikerjakan; (4) maksimal 90 kata; (5) jangan pernah meminta atau menyebut password, email, atau data rahasia.",
         },
         { role: "user", content: `Alasan penolakan: ${reason}` },
       ],
