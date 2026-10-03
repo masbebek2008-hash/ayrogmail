@@ -76,7 +76,7 @@ export const rejectWithGuide = createServerFn({ method: "POST" })
     if (!roles?.length) throw new Error("Akses ditolak: bukan admin.");
     const reason = sanitize(data.reason);
     if (!reason) throw new Error("Alasan penolakan wajib diisi.");
-    const apiKey = process.env.LOVABLE_API_KEY;
+    const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) throw new Error("Konfigurasi AI belum tersedia.");
     const guide = await streamGuide(reason, apiKey);
     const { error } = await context.supabase

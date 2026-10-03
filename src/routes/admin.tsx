@@ -122,7 +122,7 @@ function AdminPage() {
         return [];
       }),
     ]);
-    setSubs((s.data as Submission[]) ?? []);
+    setSubs((s.data as unknown as Submission[]) ?? []);
     setWds((w.data as Withdrawal[]) ?? []);
     setMembers(m);
     if (st.data) {

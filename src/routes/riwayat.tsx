@@ -67,7 +67,7 @@ function RiwayatPage() {
       .select("id, gmail_address, status, rate, created_at, rejection_reason, fix_guide")
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
-      .then(({ data }) => setSubmissions((data as Submission[]) ?? []));
+      .then(({ data }) => setSubmissions((data as unknown as Submission[]) ?? []));
     supabase
       .from("withdrawals")
       .select("id, amount, method, status, created_at")
