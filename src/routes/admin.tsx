@@ -273,7 +273,8 @@ function AdminPage() {
     </div>
   );
 
-  const query = search.trim().toLowerCase();
+  const searchTerms = search.trim().toLowerCase().split(/[\s,;]+/).filter(Boolean);
+  const query = searchTerms.length > 0 ? searchTerms[0] : "";
   const memberById = new Map(members.map((m) => [m.user_id, m]));
   const memberLabel = (userId: string) => {
     const m = memberById.get(userId);
@@ -306,16 +307,18 @@ function AdminPage() {
     : dateFrom
       ? `Sejak ${fmtFilterDate(dateFrom)}`
       : `Sampai ${fmtFilterDate(dateTo)}`;
-  const filteredSubs = query
+  const filteredSubs = searchTerms.length
     ? rangeFilteredSubs.filter((s) => {
         const m = memberById.get(s.user_id);
-        return (
-          s.gmail_address.toLowerCase().includes(query) ||
-          (m && (m.display_name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query)))
+        return searchTerms.some((term) =>
+          s.gmail_address.toLowerCase().includes(term) ||
+          (m && (m.display_name.toLowerCase().includes(term) || m.email.toLowerCase().includes(term)))
         );
       })
     : rangeFilteredSubs;
-  const filteredWds = query ? wds.filter((w) => w.account_info.toLowerCase().includes(query) || w.method.toLowerCase().includes(query)) : wds;
+  const filteredWds = searchTerms.length
+    ? wds.filter((w) => searchTerms.some((term) => w.account_info.toLowerCase().includes(term) || w.method.toLowerCase().includes(term)))
+    : wds;
   const pendingSubs = subs.filter((item) => item.status === "menunggu").length;
   const pendingWds = wds.filter((item) => item.status === "menunggu" || item.status === "diproses").length;
   const memberQuery = memberSearch.trim().toLowerCase();
