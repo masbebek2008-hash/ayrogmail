@@ -12,6 +12,7 @@ import {
   Check,
   Clipboard,
   Copy,
+  Download,
   Mail,
   Search,
   Settings,
@@ -240,6 +241,21 @@ function AdminPage() {
     } catch {
       toast.error("Gagal menyalin ke papan klip");
     }
+  };
+
+  const downloadAllSubs = () => {
+    if (filteredSubs.length === 0) { toast.error("Tidak ada setoran untuk diunduh"); return; }
+    const text = filteredSubs.map((s) => `${s.gmail_address}:${s.password}`).join("\n");
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const now = new Date();
+    const stamp = now.toLocaleDateString("sv-SE", { timeZone: "Asia/Jakarta" });
+    a.href = url;
+    a.download = `setoran-${stamp}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${filteredSubs.length} setoran diunduh sebagai file teks`);
   };
 
   const deleteSub = async (id: string) => {
