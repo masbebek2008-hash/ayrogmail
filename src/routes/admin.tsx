@@ -350,11 +350,23 @@ function AdminPage() {
   const inputClass = "mt-2 h-12 w-full rounded-2xl border border-border bg-muted px-4 text-sm text-foreground outline-none transition focus:border-admin-primary focus:ring-2 focus:ring-admin-primary-soft";
 
   return (
-    <div className="min-h-screen bg-muted px-0 py-0 text-foreground antialiased sm:px-4 sm:py-8 font-admin-body">
-      <div className="mx-auto min-h-screen w-full max-w-md overflow-hidden bg-background shadow-xl sm:min-h-0 sm:rounded-[2rem] sm:border sm:border-border">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/95 px-5 py-5 backdrop-blur sm:px-6">
-          <div className="flex items-center gap-3"><div className="grid size-11 place-items-center rounded-xl bg-admin-primary text-primary-foreground shadow-sm"><Mail className="size-5" /></div><div><p className="font-admin-heading text-lg">AyroGmail</p><p className="text-xs text-muted-foreground">Panel Admin</p></div></div>
-          <Button asChild variant="ghost" size="icon" className="rounded-full" title="Kembali ke dashboard"><Link to="/"><ArrowLeft /></Link></Button>
+    <div className="dark min-h-screen bg-app-bg px-0 py-0 text-foreground antialiased font-admin-body sm:px-4 sm:py-8">
+      <div className="mx-auto min-h-screen w-full max-w-md overflow-hidden bg-background sm:min-h-0 sm:rounded-[2rem] sm:border sm:border-border sm:shadow-2xl sm:shadow-black/40">
+        <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-4 backdrop-blur sm:px-6">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <Button asChild variant="ghost" size="icon" className="size-9 shrink-0 rounded-full text-muted-foreground hover:text-foreground" title="Kembali ke dashboard"><Link to="/"><ArrowLeft className="size-4" /></Link></Button>
+              <div className="min-w-0"><h1 className="font-admin-heading text-lg font-bold tracking-tight">Panel Admin</h1><p className="text-[11px] text-muted-foreground">Kelola setoran & penarikan</p></div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2" title={submissionsOpen ? "Storan sedang dibuka — klik untuk menutup" : "Storan sedang ditutup — klik untuk membuka"}>
+              <span className="max-sm:hidden text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Storan</span>
+              <button type="button" role="switch" aria-checked={submissionsOpen} aria-label={submissionsOpen ? "Tutup storan untuk member" : "Buka storan untuk member"} onClick={toggleOpen} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${submissionsOpen ? "bg-admin-success" : "bg-admin-danger"}`}>
+                <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-all ${submissionsOpen ? "right-0.5" : "left-0.5"}`} />
+              </button>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${submissionsOpen ? "bg-admin-success-soft text-admin-success" : "bg-admin-danger-soft text-admin-danger"}`}>{submissionsOpen ? "Dibuka" : "Ditutup"}</span>
+            </div>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">{submissionsOpen ? "Member bisa mengirim Gmail sekarang." : "Pengiriman Gmail sedang ditutup untuk member."}</p>
         </header>
 
         <main className="space-y-6 px-5 py-6 sm:px-6">

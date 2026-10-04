@@ -111,6 +111,30 @@
   --admin-danger-soft: oklch(0.95 0.035 25);
 }
 
+/* Dark scope used by the admin panel only */
+.dark {
+  --background: oklch(0.129 0.042 264.695); /* slate-950 */
+  --foreground: oklch(0.929 0.013 255.508); /* slate-200 */
+  --card: oklch(0.208 0.042 265.755); /* slate-900 */
+  --card-foreground: oklch(0.929 0.013 255.508);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.929 0.013 255.508);
+  --secondary: oklch(0.279 0.041 260.031); /* slate-800 */
+  --secondary-foreground: oklch(0.968 0.007 247.896);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788); /* slate-400 */
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.968 0.007 247.896);
+  --border: oklch(1 0 0 / 0.09);
+  --input: oklch(1 0 0 / 0.09);
+  --ring: oklch(0.585 0.233 277.117); /* indigo-500 */
+  --app-bg: oklch(0.129 0.042 264.695);
+  --admin-primary-soft: oklch(0.585 0.233 277.117 / 0.16);
+  --admin-success-soft: oklch(0.696 0.17 162.48 / 0.14);
+  --admin-warning-soft: oklch(0.769 0.188 70.08 / 0.14);
+  --admin-danger-soft: oklch(0.637 0.237 25.331 / 0.15);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
