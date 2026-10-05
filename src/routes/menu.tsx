@@ -34,8 +34,8 @@ function MenuPage() {
 
   if (loading || !session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--app-bg)]">
-        <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
+      <div className="dark min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="w-8 h-8 border-2 border-border border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
@@ -46,15 +46,15 @@ function MenuPage() {
   };
 
   return (
-    <div className="text-slate-800 antialiased flex justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md bg-[var(--app-bg)] min-h-screen shadow-2xl flex flex-col">
-        <header className="bg-white flex items-center gap-3 px-5 py-4 sticky top-0 z-20 shadow-sm">
-          <Link to="/" className="text-slate-600 hover:text-slate-900 p-1" aria-label="Kembali">
+    <div className="dark text-slate-100 antialiased flex justify-center min-h-screen bg-app-bg">
+      <div className="w-full max-w-md bg-app-bg min-h-screen sm:shadow-2xl sm:shadow-black/40 flex flex-col">
+        <header className="bg-card/95 backdrop-blur border-b border-border flex items-center gap-3 px-5 py-4 sticky top-0 z-20">
+          <Link to="/" className="text-muted-foreground hover:text-foreground p-1" aria-label="Kembali">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </Link>
-          <h1 className="font-bold text-lg text-slate-900 tracking-tight">Semua menu</h1>
+          <h1 className="font-bold text-lg text-foreground tracking-tight">Semua menu</h1>
         </header>
 
         <main className="flex-1 px-4 py-6 space-y-3">
@@ -65,21 +65,21 @@ function MenuPage() {
             href="https://whatsapp.com/channel/0029VbAyrogmail"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between bg-card border border-border rounded-2xl p-4 hover:bg-muted/60 transition-colors"
           >
             <div>
-              <p className="font-medium text-sm text-gray-800">Saluran WhatsApp</p>
-              <p className="text-xs text-gray-500">Info dan pengumuman terbaru</p>
+              <p className="font-medium text-sm text-foreground">Saluran WhatsApp</p>
+              <p className="text-xs text-muted-foreground">Info dan pengumuman terbaru</p>
             </div>
             <ChevronIcon />
           </a>
           <button
             onClick={signOut}
-            className="w-full flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors text-left"
+            className="w-full flex items-center justify-between bg-card border border-border rounded-2xl p-4 hover:bg-muted/60 transition-colors text-left"
           >
             <div>
-              <p className="font-medium text-sm text-red-500">Keluar</p>
-              <p className="text-xs text-gray-500">Akhiri sesi Anda</p>
+              <p className="font-medium text-sm text-admin-danger">Keluar</p>
+              <p className="text-xs text-muted-foreground">Akhiri sesi Anda</p>
             </div>
             <ChevronIcon />
           </button>
@@ -93,11 +93,11 @@ function MenuItem({ to, label, desc }: { to: string; label: string; desc: string
   return (
     <Link
       to={to}
-      className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors"
+      className="flex items-center justify-between bg-card border border-border rounded-2xl p-4 hover:bg-muted/60 transition-colors"
     >
       <div>
-        <p className="font-medium text-sm text-gray-800">{label}</p>
-        <p className="text-xs text-gray-500">{desc}</p>
+        <p className="font-medium text-sm text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{desc}</p>
       </div>
       <ChevronIcon />
     </Link>
@@ -106,7 +106,7 @@ function MenuItem({ to, label, desc }: { to: string; label: string; desc: string
 
 function ChevronIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
       <polyline points="9 18 15 12 9 6"></polyline>
     </svg>
   );
