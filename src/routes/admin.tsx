@@ -13,7 +13,6 @@ import {
   Clipboard,
   Copy,
   Download,
-  Mail,
   Search,
   Settings,
   ShieldCheck,
@@ -495,8 +494,22 @@ function EmptyState({ text }: { text: string }) { return <div className="rounded
 
 function StatusButton({ status, current, onClick }: { status: string; current: string; onClick: () => void }) {
   const icon = status === "ditolak" ? <X /> : status === "menunggu" ? <Clipboard /> : <Check />;
-  const tone = status === "ditolak" ? "text-admin-danger hover:bg-admin-danger-soft" : status === "menunggu" ? "text-admin-warning hover:bg-admin-warning-soft" : "text-admin-success hover:bg-admin-success-soft";
-  return <Button type="button" variant="outline" onClick={onClick} disabled={current === status} className={`h-auto min-w-0 flex-col gap-1 rounded-2xl px-1 py-3 text-[11px] capitalize ${tone}`}>{icon}{status}</Button>;
+  const active = current === status;
+  const tone = status === "ditolak"
+    ? "border-admin-danger/40 bg-admin-danger-soft text-admin-danger"
+    : status === "menunggu"
+      ? "border-admin-warning/40 bg-admin-warning-soft text-admin-warning"
+      : "border-admin-success/40 bg-admin-success-soft text-admin-success";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={active}
+      className={`flex min-w-0 flex-col items-center gap-1 rounded-xl border px-1 py-2.5 text-[10px] font-bold capitalize transition ${active ? tone : "border-border bg-muted text-muted-foreground hover:text-foreground"}`}
+    >
+      {icon}{status}
+    </button>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
