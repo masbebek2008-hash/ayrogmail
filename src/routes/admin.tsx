@@ -369,25 +369,18 @@ function AdminPage() {
           <p className="mt-2 text-[11px] text-muted-foreground">{submissionsOpen ? "Member bisa mengirim Gmail sekarang." : "Pengiriman Gmail sedang ditutup untuk member."}</p>
         </header>
 
-        <main className="space-y-6 px-5 py-6 sm:px-6">
-          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm" aria-label="Status storan">
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <h2 className="font-admin-heading text-base">Status storan</h2>
-                <p className="mt-1 text-xs text-muted-foreground">{submissionsOpen ? "Member bisa mengirim Gmail sekarang." : "Pengiriman Gmail sedang ditutup untuk member."}</p>
-              </div>
-              <span className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-bold uppercase ${submissionsOpen ? "bg-admin-success-soft text-admin-success" : "bg-admin-danger-soft text-admin-danger"}`}>{submissionsOpen ? "Dibuka" : "Ditutup"}</span>
-            </div>
-            <Button type="button" onClick={toggleOpen} className={`mt-4 h-12 w-full rounded-2xl ${submissionsOpen ? "bg-admin-danger text-primary-foreground hover:bg-admin-danger/90" : "bg-admin-success text-primary-foreground hover:bg-admin-success/90"}`}>{submissionsOpen ? "Tutup storan untuk member" : "Buka storan untuk member"}</Button>
-          </section>
-
+        <main className="space-y-5 px-5 py-5 sm:px-6">
           <section className="grid grid-cols-2 gap-3" aria-label="Ringkasan">
-            <button type="button" onClick={() => { setSection("transaksi"); setTab("setoran"); }} className="rounded-3xl border border-border bg-card p-5 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-3xl">{pendingSubs}</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Setoran menunggu</p></button>
-            <button type="button" onClick={() => { setSection("transaksi"); setTab("penarikan"); }} className="rounded-3xl border border-border bg-card p-5 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-3xl">{pendingWds}</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Penarikan aktif</p></button>
+            <button type="button" onClick={() => { setSection("transaksi"); setTab("setoran"); }} className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-2xl">{pendingSubs}</p><p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Setoran menunggu</p></button>
+            <button type="button" onClick={() => { setSection("transaksi"); setTab("penarikan"); }} className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-2xl">{pendingWds}</p><p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Penarikan aktif</p></button>
           </section>
 
-          <nav className="grid grid-cols-4 gap-2" aria-label="Menu admin">
-            {navItems.map(({ id, label, icon: Icon }) => <Button key={id} type="button" variant="ghost" onClick={() => setSection(id)} className={`h-auto min-w-0 flex-col gap-2 rounded-2xl px-2 py-3 ${section === id ? "bg-admin-primary-soft text-admin-primary" : "text-muted-foreground hover:bg-muted"}`}><Icon className="size-5" /><span className="text-[11px] font-bold">{label}</span></Button>)}
+          <nav className="flex gap-1 rounded-2xl border border-border bg-card p-1" aria-label="Menu admin">
+            {navItems.map(({ id, label, icon: Icon }) => (
+              <button key={id} type="button" onClick={() => setSection(id)} className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-1 py-2.5 text-[11px] font-bold transition ${section === id ? "bg-admin-primary text-primary-foreground shadow-lg shadow-admin-primary/25" : "text-muted-foreground hover:text-foreground"}`}>
+                <Icon className="size-4 shrink-0" /><span className="truncate">{label}</span>
+              </button>
+            ))}
           </nav>
 
           {section === "member" && <section className="space-y-4">
