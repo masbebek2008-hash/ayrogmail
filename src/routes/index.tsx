@@ -1,3 +1,5 @@
+// ============= Full file contents =============
+
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -94,34 +96,34 @@ function Dashboard() {
 
   if (loading || !session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--app-bg)]">
-        <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
+      <div className="dark min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="w-8 h-8 border-2 border-border border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="text-slate-800 antialiased flex justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md md:max-w-5xl bg-[var(--app-bg)] min-h-screen shadow-2xl relative flex flex-col">
+    <div className="dark text-slate-100 antialiased flex justify-center min-h-screen bg-app-bg">
+      <div className="w-full max-w-md md:max-w-5xl bg-app-bg min-h-screen sm:shadow-2xl sm:shadow-black/40 relative flex flex-col">
         {/* Header */}
-        <header className="bg-white flex items-center justify-between px-5 md:px-8 py-4 sticky top-0 z-20 shadow-sm">
+        <header className="bg-card/95 backdrop-blur border-b border-border flex items-center justify-between px-5 md:px-8 py-4 sticky top-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="bg-[var(--ink)] text-white p-2 rounded-xl flex items-center justify-center">
+            <div className="bg-admin-primary text-primary-foreground p-2 rounded-xl flex items-center justify-center shadow-lg shadow-admin-primary/25">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
                 <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
                 <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
               </svg>
             </div>
-            <h1 className="font-bold text-lg text-slate-900 tracking-tight">AyroGmail</h1>
+            <h1 className="font-bold text-lg text-foreground tracking-tight">AyroGmail</h1>
           </div>
           <div className="flex items-center gap-4 text-sm font-medium">
-            <span className={settings.submissions_open ? "text-blue-600" : "text-red-500"}>
+            <span className={settings.submissions_open ? "text-admin-success" : "text-admin-danger"}>
               {settings.submissions_open ? "Setoran dibuka" : "Setoran ditutup"}
             </span>
             <button
               onClick={signOut}
-              className="flex items-center gap-1.5 text-slate-700 hover:text-slate-900 transition-colors"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -138,9 +140,10 @@ function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 md:items-start">
           <div className="md:col-span-7 lg:col-span-8 space-y-4 md:space-y-6">
           {/* Balance card */}
-          <div className="bg-[var(--ink)] text-white rounded-[1.5rem] md:rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden">
-            <p className="text-sm text-gray-300 mb-1 truncate">Halo, {displayName}</p>
-            <div className="flex items-center gap-2 mb-2 text-gray-400 text-sm">
+          <div className="bg-card border border-border rounded-[1.5rem] md:rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden">
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-admin-primary/10 blur-2xl pointer-events-none" />
+            <p className="text-sm text-muted-foreground mb-1 truncate">Halo, {displayName}</p>
+            <div className="flex items-center gap-2 mb-2 text-muted-foreground text-sm">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
                 <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
@@ -148,11 +151,11 @@ function Dashboard() {
               </svg>
               Saldo Anda
             </div>
-            <h2 className="text-[2.5rem] md:text-5xl font-bold leading-none mb-6 md:mb-8">{formatRupiah(stats.saldo)}</h2>
+            <h2 className="text-[2.5rem] md:text-5xl font-bold leading-none mb-6 md:mb-8 text-foreground">{formatRupiah(stats.saldo)}</h2>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowWithdraw(true)}
-                className="bg-white text-gray-900 px-5 md:px-6 py-2.5 rounded-full font-medium text-sm md:text-base flex items-center gap-2 hover:bg-gray-100 transition-colors active:scale-95"
+                className="bg-admin-primary text-primary-foreground px-5 md:px-6 py-2.5 rounded-full font-medium text-sm md:text-base flex items-center gap-2 shadow-lg shadow-admin-primary/25 hover:bg-admin-primary/90 transition-colors active:scale-95"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -162,7 +165,7 @@ function Dashboard() {
               </button>
               <Link
                 to="/riwayat"
-                className="bg-transparent border border-gray-500 text-white px-5 md:px-6 py-2.5 rounded-full font-medium text-sm md:text-base flex items-center gap-2 hover:bg-gray-700 transition-colors active:scale-95"
+                className="bg-transparent border border-border text-foreground px-5 md:px-6 py-2.5 rounded-full font-medium text-sm md:text-base flex items-center gap-2 hover:bg-muted transition-colors active:scale-95"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
@@ -176,50 +179,50 @@ function Dashboard() {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 md:gap-4">
-            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center mb-2">
-                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+            <div className="bg-card border border-border rounded-2xl md:rounded-3xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 bg-admin-warning-soft rounded-full flex items-center justify-center mb-2">
+                <div className="w-2 h-2 bg-admin-warning rounded-full"></div>
               </div>
-              <p className="text-2xl font-bold text-gray-800">{stats.menunggu}</p>
-              <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase mt-0.5">Menunggu</p>
+              <p className="text-2xl font-bold text-foreground">{stats.menunggu}</p>
+              <p className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase mt-0.5">Menunggu</p>
             </div>
-            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center mb-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+            <div className="bg-card border border-border rounded-2xl md:rounded-3xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 bg-admin-success-soft rounded-full flex items-center justify-center mb-2">
+                <div className="w-2 h-2 bg-admin-success rounded-full"></div>
               </div>
-              <p className="text-2xl font-bold text-gray-800">{stats.disetujui}</p>
-              <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase mt-0.5">Disetujui</p>
+              <p className="text-2xl font-bold text-foreground">{stats.disetujui}</p>
+              <p className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase mt-0.5">Disetujui</p>
             </div>
-            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-              <div className="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center mb-2">
-                <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+            <div className="bg-card border border-border rounded-2xl md:rounded-3xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 bg-admin-danger-soft rounded-full flex items-center justify-center mb-2">
+                <div className="w-2 h-2 bg-admin-danger rounded-full"></div>
               </div>
-              <p className="text-2xl font-bold text-red-500">{stats.ditolak}</p>
-              <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase mt-0.5">Ditolak</p>
+              <p className="text-2xl font-bold text-admin-danger">{stats.ditolak}</p>
+              <p className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase mt-0.5">Ditolak</p>
             </div>
           </div>
           </div>
 
           <div className="md:col-span-5 lg:col-span-4 space-y-4 md:space-y-6">
           {/* Pilih password */}
-          <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-gray-100">
+          <div className="bg-card border border-border rounded-[1.5rem] p-5">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-admin-primary">
                   <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
                 </svg>
                 Pilih password
               </h3>
-              <span className="text-xs font-medium text-gray-500">Rate {settings.rate.toLocaleString("id-ID")}/Gmail</span>
+              <span className="text-xs font-medium text-muted-foreground">Rate {settings.rate.toLocaleString("id-ID")}/Gmail</span>
             </div>
             <button
               onClick={() => setShowSubmit(true)}
               disabled={!settings.submissions_open}
-              className="w-full bg-[#F3F4F6] text-gray-800 font-medium py-3 rounded-xl mb-3 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-admin-primary text-primary-foreground font-medium py-3 rounded-xl mb-3 shadow-lg shadow-admin-primary/25 hover:bg-admin-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {settings.submissions_open ? "Pilih password" : "Setoran ditutup"}
             </button>
-            <p className="text-[11px] text-gray-400 leading-relaxed">
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
               {settings.submissions_open
                 ? "Password wajib huruf kecil semua. Huruf besar otomatis ditolak."
                 : "Setoran sedang ditutup admin. Coba lagi nanti."}
@@ -231,7 +234,7 @@ function Dashboard() {
             href="https://whatsapp.com/channel/0029Vb99e0GEquiX1HOVse3o"
             target="_blank"
             rel="noreferrer"
-            className="block text-center w-full bg-transparent border border-gray-300 text-gray-700 font-medium py-3 rounded-full hover:bg-gray-100 transition-colors active:scale-[0.98]"
+            className="block text-center w-full bg-transparent border border-border text-foreground font-medium py-3 rounded-full hover:bg-muted transition-colors active:scale-[0.98]"
           >
             Saluran WhatsApp
           </a>
@@ -240,10 +243,10 @@ function Dashboard() {
         </main>
 
         {/* Bottom nav */}
-        <nav className="bg-[#F8F9FA] border-t border-gray-200 p-4 absolute bottom-0 w-full flex justify-center z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <nav className="bg-card/95 backdrop-blur border-t border-border p-4 absolute bottom-0 w-full flex justify-center z-20">
           <Link
             to="/menu"
-            className="flex items-center gap-2 text-gray-800 font-medium hover:text-gray-600 transition-colors"
+            className="flex items-center gap-2 text-foreground font-medium hover:text-admin-primary transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="4" y1="12" x2="20" y2="12"></line>
@@ -316,12 +319,12 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
 
   return (
     <ModalShell title="Tarik dana" onClose={onClose}>
-      <p className="text-sm text-gray-500 mb-4">
-        Saldo tersedia: <span className="font-semibold text-gray-800">{formatRupiah(saldo)}</span> · Minimal penarikan{" "}
-        <span className="font-semibold text-gray-800">{formatRupiah(minWithdraw)}</span>
+      <p className="text-sm text-muted-foreground mb-4">
+        Saldo tersedia: <span className="font-semibold text-foreground">{formatRupiah(saldo)}</span> · Minimal penarikan{" "}
+        <span className="font-semibold text-foreground">{formatRupiah(minWithdraw)}</span>
         {adminFee > 0 && (
           <>
-            {" "}· Biaya admin <span className="font-semibold text-gray-800">{formatRupiah(adminFee)}</span>
+            {" "}· Biaya admin <span className="font-semibold text-foreground">{formatRupiah(adminFee)}</span>
           </>
         )}
       </p>
@@ -332,12 +335,12 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
           placeholder="Jumlah (Rp)"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+          className="w-full px-4 py-3 rounded-xl bg-muted text-foreground text-sm outline-none placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-admin-primary/40"
         />
         <select
           value={method}
           onChange={(e) => setMethod(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+          className="w-full px-4 py-3 rounded-xl bg-muted text-foreground text-sm outline-none focus:ring-2 focus:ring-admin-primary/40"
         >
           <option>DANA</option>
           <option>GoPay</option>
@@ -348,19 +351,19 @@ function WithdrawModal({ saldo, minWithdraw, adminFee, onClose, onDone }: { sald
           placeholder="Nomor / rekening tujuan"
           value={account}
           onChange={(e) => setAccount(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+          className="w-full px-4 py-3 rounded-xl bg-muted text-foreground text-sm outline-none placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-admin-primary/40"
         />
         <input
           type="text"
           placeholder="Nama pemilik rekening"
           value={accName}
           onChange={(e) => setAccName(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+          className="w-full px-4 py-3 rounded-xl bg-muted text-foreground text-sm outline-none placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-admin-primary/40"
         />
         <button
           type="submit"
           disabled={busy}
-          className="w-full bg-[var(--ink)] text-white font-medium py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          className="w-full bg-admin-primary text-primary-foreground font-medium py-3 rounded-xl shadow-lg shadow-admin-primary/25 hover:bg-admin-primary/90 transition-colors disabled:opacity-60"
         >
           {busy ? "Memproses..." : "Kirim permintaan"}
         </button>
@@ -426,15 +429,15 @@ function SubmitModal({ rate, dailyLimit, todayCount, memberPassword, onClose, on
 
   return (
     <ModalShell title="Pilih password" onClose={onClose}>
-      <p className="text-sm text-gray-500 mb-4">
-        Kirim akun Gmail Anda. Rate <span className="font-semibold text-gray-800">{formatRupiah(rate)}</span> per Gmail yang disetujui.
+      <p className="text-sm text-muted-foreground mb-4">
+        Kirim akun Gmail Anda. Rate <span className="font-semibold text-foreground">{formatRupiah(rate)}</span> per Gmail yang disetujui.
         {dailyLimit > 0 && (
-          <> · Sisa hari ini <span className="font-semibold text-gray-800">{remaining}</span></>
+          <> · Sisa hari ini <span className="font-semibold text-foreground">{remaining}</span></>
         )}
       </p>
       <form onSubmit={submit} className="space-y-3">
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-500 block">
+          <label className="text-xs font-medium text-muted-foreground block">
             Alamat Gmail (1 baris 1 Gmail)
           </label>
           <textarea
@@ -442,25 +445,25 @@ function SubmitModal({ rate, dailyLimit, todayCount, memberPassword, onClose, on
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             rows={6}
-            className="w-full px-3 py-2.5 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300 resize-y font-mono"
+            className="w-full px-3 py-2.5 rounded-xl bg-muted text-foreground text-sm outline-none placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-admin-primary/40 resize-y font-mono"
           />
           {gmails.length > 0 && (
-            <p className="text-xs text-gray-500 px-1">{gmails.length} Gmail terdeteksi</p>
+            <p className="text-xs text-admin-primary px-1">{gmails.length} Gmail terdeteksi</p>
           )}
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-500 block">Password (satu untuk semua Gmail)</label>
+          <label className="text-xs font-medium text-muted-foreground block">Password (satu untuk semua Gmail)</label>
           <input
             type="text"
             placeholder="Password (huruf kecil semua)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-[#F3F4F6] text-sm outline-none focus:ring-2 focus:ring-slate-300"
+            className="w-full px-4 py-3 rounded-xl bg-muted text-foreground text-sm outline-none placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-admin-primary/40"
           />
         </div>
 
-        <p className="text-[11px] text-gray-400 leading-relaxed">
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
           {memberPassword
             ? "Password sudah diisi otomatis oleh admin. Langsung kirim saja, tidak perlu diubah."
             : "Password wajib huruf kecil semua. Huruf besar otomatis ditolak. Password dipakai untuk semua Gmail di daftar."}
@@ -468,7 +471,7 @@ function SubmitModal({ rate, dailyLimit, todayCount, memberPassword, onClose, on
         <button
           type="submit"
           disabled={busy || gmails.length === 0}
-          className="w-full bg-[var(--ink)] text-white font-medium py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          className="w-full bg-admin-primary text-primary-foreground font-medium py-3 rounded-xl shadow-lg shadow-admin-primary/25 hover:bg-admin-primary/90 transition-colors disabled:opacity-60 disabled:shadow-none"
         >
           {busy ? "Mengirim..." : `Kirim ${gmails.length} Gmail`}
         </button>
@@ -479,14 +482,14 @@ function SubmitModal({ rate, dailyLimit, todayCount, memberPassword, onClose, on
 
 function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="absolute inset-0 z-30 flex items-end justify-center bg-black/40" onClick={onClose}>
+    <div className="absolute inset-0 z-30 flex items-end justify-center bg-black/60" onClick={onClose}>
       <div
-        className="w-full bg-white rounded-t-[1.5rem] p-6 pb-8 animate-in slide-in-from-bottom-8 duration-200"
+        className="w-full bg-card border-t border-border rounded-t-[1.5rem] p-6 pb-8 animate-in slide-in-from-bottom-8 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg">{title}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1" aria-label="Tutup">
+          <h3 className="font-semibold text-foreground text-lg">{title}</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1" aria-label="Tutup">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>

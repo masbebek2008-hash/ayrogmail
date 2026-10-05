@@ -31,11 +31,11 @@ type Withdrawal = {
 };
 
 const statusStyle: Record<string, string> = {
-  menunggu: "bg-amber-100 text-amber-700",
-  disetujui: "bg-emerald-100 text-emerald-700",
-  ditolak: "bg-red-100 text-red-600",
-  diproses: "bg-blue-100 text-blue-700",
-  selesai: "bg-emerald-100 text-emerald-700",
+  menunggu: "bg-admin-warning-soft text-admin-warning",
+  disetujui: "bg-admin-success-soft text-admin-success",
+  ditolak: "bg-admin-danger-soft text-admin-danger",
+  diproses: "bg-admin-primary-soft text-admin-primary",
+  selesai: "bg-admin-success-soft text-admin-success",
 };
 
 function formatDate(iso: string) {
@@ -78,35 +78,35 @@ function RiwayatPage() {
 
   if (loading || !session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--app-bg)]">
-        <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
+      <div className="dark min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="w-8 h-8 border-2 border-border border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="text-slate-800 antialiased flex justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md bg-[var(--app-bg)] min-h-screen shadow-2xl flex flex-col">
-        <header className="bg-white flex items-center gap-3 px-5 py-4 sticky top-0 z-20 shadow-sm">
-          <Link to="/" className="text-slate-600 hover:text-slate-900 p-1" aria-label="Kembali">
+    <div className="dark text-slate-100 antialiased flex justify-center min-h-screen bg-app-bg">
+      <div className="w-full max-w-md bg-app-bg min-h-screen sm:shadow-2xl sm:shadow-black/40 flex flex-col">
+        <header className="bg-card/95 backdrop-blur border-b border-border flex items-center gap-3 px-5 py-4 sticky top-0 z-20">
+          <Link to="/" className="text-muted-foreground hover:text-foreground p-1" aria-label="Kembali">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </Link>
-          <h1 className="font-bold text-lg text-slate-900 tracking-tight">Riwayat</h1>
+          <h1 className="font-bold text-lg text-foreground tracking-tight">Riwayat</h1>
         </header>
 
         <div className="px-4 pt-4">
-          <div className="bg-white rounded-full p-1 flex shadow-sm border border-gray-100">
+          <div className="rounded-2xl border border-border bg-card p-1 flex">
             <button
               onClick={() => setTab("gmail")}
-              className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${tab === "gmail" ? "bg-[var(--ink)] text-white" : "text-gray-500"}`}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${tab === "gmail" ? "bg-admin-primary text-primary-foreground shadow-lg shadow-admin-primary/25" : "text-muted-foreground"}`}
             >
               Gmail
             </button>
             <button
               onClick={() => setTab("dana")}
-              className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${tab === "dana" ? "bg-[var(--ink)] text-white" : "text-gray-500"}`}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${tab === "dana" ? "bg-admin-primary text-primary-foreground shadow-lg shadow-admin-primary/25" : "text-muted-foreground"}`}
             >
               Penarikan
             </button>
@@ -119,21 +119,21 @@ function RiwayatPage() {
               <EmptyState text="Belum ada Gmail yang dikirim" />
             ) : (
               submissions.map((s) => (
-                <div key={s.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-sm text-gray-800 truncate">{s.gmail_address}</p>
-                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full capitalize ${statusStyle[s.status]}`}>
+                <div key={s.id} className="bg-card border border-border rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <p className="font-medium text-sm text-foreground truncate">{s.gmail_address}</p>
+                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full capitalize shrink-0 ${statusStyle[s.status]}`}>
                       {s.status}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>Rp {s.rate.toLocaleString("id-ID")}</span>
                     <span>{formatDate(s.created_at)}</span>
                   </div>
                   {s.status === "ditolak" && (s.rejection_reason || s.fix_guide) && (
-                    <div className="mt-3 rounded-xl bg-red-50 p-3 text-xs text-gray-700 space-y-1">
-                      {s.rejection_reason && <p className="font-semibold text-red-600">Alasan ditolak: {s.rejection_reason}</p>}
-                      {s.fix_guide && <p className="whitespace-pre-line">{s.fix_guide}</p>}
+                    <div className="mt-3 rounded-xl border border-admin-danger/30 bg-admin-danger-soft p-3 text-xs space-y-1">
+                      {s.rejection_reason && <p className="font-semibold text-admin-danger">Alasan ditolak: {s.rejection_reason}</p>}
+                      {s.fix_guide && <p className="whitespace-pre-line text-foreground/90">{s.fix_guide}</p>}
                     </div>
                   )}
                 </div>
@@ -145,16 +145,16 @@ function RiwayatPage() {
               <EmptyState text="Belum ada penarikan dana" />
             ) : (
               withdrawals.map((w) => (
-                <div key={w.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-sm text-gray-800">
+                <div key={w.id} className="bg-card border border-border rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <p className="font-medium text-sm text-foreground">
                       Rp {w.amount.toLocaleString("id-ID")} · {w.method}
                     </p>
-                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full capitalize ${statusStyle[w.status] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full capitalize shrink-0 ${statusStyle[w.status] ?? "bg-muted text-muted-foreground"}`}>
                       {w.status}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 text-right">{formatDate(w.created_at)}</p>
+                  <p className="text-xs text-muted-foreground text-right">{formatDate(w.created_at)}</p>
                 </div>
               ))
             ))}
@@ -166,7 +166,7 @@ function RiwayatPage() {
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center text-sm text-gray-400">
+    <div className="bg-card border border-border rounded-2xl p-8 text-center text-sm text-muted-foreground">
       {text}
     </div>
   );
