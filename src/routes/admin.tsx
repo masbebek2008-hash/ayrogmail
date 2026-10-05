@@ -13,7 +13,6 @@ import {
   Clipboard,
   Copy,
   Download,
-  Mail,
   Search,
   Settings,
   ShieldCheck,
@@ -369,25 +368,18 @@ function AdminPage() {
           <p className="mt-2 text-[11px] text-muted-foreground">{submissionsOpen ? "Member bisa mengirim Gmail sekarang." : "Pengiriman Gmail sedang ditutup untuk member."}</p>
         </header>
 
-        <main className="space-y-6 px-5 py-6 sm:px-6">
-          <section className="rounded-3xl border border-border bg-card p-5 shadow-sm" aria-label="Status storan">
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <h2 className="font-admin-heading text-base">Status storan</h2>
-                <p className="mt-1 text-xs text-muted-foreground">{submissionsOpen ? "Member bisa mengirim Gmail sekarang." : "Pengiriman Gmail sedang ditutup untuk member."}</p>
-              </div>
-              <span className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-bold uppercase ${submissionsOpen ? "bg-admin-success-soft text-admin-success" : "bg-admin-danger-soft text-admin-danger"}`}>{submissionsOpen ? "Dibuka" : "Ditutup"}</span>
-            </div>
-            <Button type="button" onClick={toggleOpen} className={`mt-4 h-12 w-full rounded-2xl ${submissionsOpen ? "bg-admin-danger text-primary-foreground hover:bg-admin-danger/90" : "bg-admin-success text-primary-foreground hover:bg-admin-success/90"}`}>{submissionsOpen ? "Tutup storan untuk member" : "Buka storan untuk member"}</Button>
-          </section>
-
+        <main className="space-y-5 px-5 py-5 sm:px-6">
           <section className="grid grid-cols-2 gap-3" aria-label="Ringkasan">
-            <button type="button" onClick={() => { setSection("transaksi"); setTab("setoran"); }} className="rounded-3xl border border-border bg-card p-5 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-3xl">{pendingSubs}</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Setoran menunggu</p></button>
-            <button type="button" onClick={() => { setSection("transaksi"); setTab("penarikan"); }} className="rounded-3xl border border-border bg-card p-5 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-3xl">{pendingWds}</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Penarikan aktif</p></button>
+            <button type="button" onClick={() => { setSection("transaksi"); setTab("setoran"); }} className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-2xl">{pendingSubs}</p><p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Setoran menunggu</p></button>
+            <button type="button" onClick={() => { setSection("transaksi"); setTab("penarikan"); }} className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition active:scale-[.98]"><p className="font-admin-heading text-2xl">{pendingWds}</p><p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Penarikan aktif</p></button>
           </section>
 
-          <nav className="grid grid-cols-4 gap-2" aria-label="Menu admin">
-            {navItems.map(({ id, label, icon: Icon }) => <Button key={id} type="button" variant="ghost" onClick={() => setSection(id)} className={`h-auto min-w-0 flex-col gap-2 rounded-2xl px-2 py-3 ${section === id ? "bg-admin-primary-soft text-admin-primary" : "text-muted-foreground hover:bg-muted"}`}><Icon className="size-5" /><span className="text-[11px] font-bold">{label}</span></Button>)}
+          <nav className="flex gap-1 rounded-2xl border border-border bg-card p-1" aria-label="Menu admin">
+            {navItems.map(({ id, label, icon: Icon }) => (
+              <button key={id} type="button" onClick={() => setSection(id)} className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-1 py-2.5 text-[11px] font-bold transition ${section === id ? "bg-admin-primary text-primary-foreground shadow-lg shadow-admin-primary/25" : "text-muted-foreground hover:text-foreground"}`}>
+                <Icon className="size-4 shrink-0" /><span className="truncate">{label}</span>
+              </button>
+            ))}
           </nav>
 
           {section === "member" && <section className="space-y-4">
@@ -424,7 +416,10 @@ function AdminPage() {
           </section>}
 
           {section === "transaksi" && <section className="space-y-4">
-            <div className="grid grid-cols-2 rounded-2xl bg-muted p-1"><Button type="button" variant="ghost" onClick={() => setTab("setoran")} className={`rounded-xl ${tab === "setoran" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><Clipboard />Setoran</Button><Button type="button" variant="ghost" onClick={() => setTab("penarikan")} className={`rounded-xl ${tab === "penarikan" ? "bg-background text-admin-primary shadow-sm" : "text-muted-foreground"}`}><WalletCards />Penarikan</Button></div>
+            <div className="grid grid-cols-2 rounded-xl border border-border bg-card p-1">
+              <Button type="button" variant="ghost" onClick={() => setTab("setoran")} className={`rounded-lg ${tab === "setoran" ? "bg-muted text-foreground" : "text-muted-foreground"}`}><Clipboard className="size-4" />Setoran</Button>
+              <Button type="button" variant="ghost" onClick={() => setTab("penarikan")} className={`rounded-lg ${tab === "penarikan" ? "bg-muted text-foreground" : "text-muted-foreground"}`}><WalletCards className="size-4" />Penarikan</Button>
+            </div>
             <div className="relative">
               <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -432,18 +427,18 @@ function AdminPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari Gmail / nomor tujuan... (bisa banyak, pisahkan dengan spasi)"
-                className="h-12 w-full rounded-2xl border border-border bg-card pl-11 pr-11 text-sm text-foreground outline-none transition focus:border-admin-primary focus:ring-2 focus:ring-admin-primary-soft"
+                className="h-11 w-full rounded-xl border border-border bg-card pl-11 pr-11 text-sm text-foreground outline-none transition focus:border-admin-primary focus:ring-2 focus:ring-admin-primary-soft"
               />
               {search && <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label="Bersihkan pencarian"><X className="size-4" /></button>}
             </div>
             {tab === "setoran" && <div className="space-y-4">
               <div className="grid grid-cols-2 gap-2">
-                <Button type="button" onClick={copyAllSubs} className="h-12 rounded-2xl bg-admin-primary text-primary-foreground hover:bg-admin-primary/90"><Copy />Salin{filteredSubs.length > 0 ? ` (${filteredSubs.length})` : ""}</Button>
-                <Button type="button" onClick={downloadAllSubs} variant="outline" className="h-12 rounded-2xl"><Download />Unduh file</Button>
+                <Button type="button" onClick={copyAllSubs} variant="outline" className="h-11 rounded-xl border-border bg-muted text-foreground hover:bg-muted/70 hover:text-foreground"><Copy className="size-4" />Salin{filteredSubs.length > 0 ? ` (${filteredSubs.length})` : ""}</Button>
+                <Button type="button" onClick={downloadAllSubs} variant="outline" className="h-11 rounded-xl border-border bg-muted text-foreground hover:bg-muted/70 hover:text-foreground"><Download className="size-4" />Unduh file</Button>
               </div>
-              <div className="space-y-3 rounded-3xl border border-border bg-card p-4 shadow-sm">
+              <div className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-bold uppercase text-muted-foreground">Rentang tanggal</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Rentang tanggal</p>
                   {(dateFrom || dateTo) && <button type="button" onClick={() => { setDateFrom(""); setDateTo(""); }} className="rounded-full bg-muted px-3 py-1 text-[10px] font-bold uppercase text-muted-foreground hover:text-foreground">Reset</button>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -451,21 +446,39 @@ function AdminPage() {
                   <label className="block text-xs font-semibold text-muted-foreground">Sampai<input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={`${inputClass} mt-1`} /></label>
                 </div>
               </div>
-              {rangeHasFilter && (rangeFilteredSubs.length === 0 ? <EmptyState text="Tidak ada setoran pada rentang tanggal ini." /> : <div className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-sm">
+              {rangeHasFilter && (rangeFilteredSubs.length === 0 ? <EmptyState text="Tidak ada setoran pada rentang tanggal ini." /> : <div className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
                 <div><h2 className="font-admin-heading text-base">Ringkasan periode</h2><p className="mt-1 text-xs text-muted-foreground">{rangeLabel}</p></div>
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-2xl bg-muted p-3"><p className="font-admin-heading text-lg">{rangeFilteredSubs.length}</p><p className="text-[10px] font-semibold text-muted-foreground">Setoran</p></div>
-                  <div className="rounded-2xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{rangeApproved.length}</p><p className="text-[10px] font-semibold text-admin-success">Disetujui</p></div>
-                  <div className="rounded-2xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{formatRupiah(rangeTotalRp)}</p><p className="text-[10px] font-semibold text-admin-success">Nilai</p></div>
+                  <div className="rounded-xl bg-muted p-3"><p className="font-admin-heading text-lg">{rangeFilteredSubs.length}</p><p className="text-[10px] font-semibold text-muted-foreground">Setoran</p></div>
+                  <div className="rounded-xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{rangeApproved.length}</p><p className="text-[10px] font-semibold text-admin-success">Disetujui</p></div>
+                  <div className="rounded-xl bg-admin-success-soft p-3"><p className="font-admin-heading text-lg text-admin-success">{formatRupiah(rangeTotalRp)}</p><p className="text-[10px] font-semibold text-admin-success">Nilai</p></div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Per member</p>
-                  {memberRangeList.map(([uid, agg]) => <div key={uid} className="flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-2"><p className="min-w-0 truncate text-xs font-semibold">{memberLabel(uid)}</p><p className="shrink-0 text-xs text-muted-foreground">{agg.total} setoran{agg.approved > 0 ? ` · ${formatRupiah(agg.earned)}` : ""}</p></div>)}
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Per member</p>
+                  {memberRangeList.map(([uid, agg]) => <div key={uid} className="flex items-center justify-between gap-3 rounded-xl bg-muted px-4 py-2"><p className="min-w-0 truncate text-xs font-semibold">{memberLabel(uid)}</p><p className="shrink-0 text-xs text-muted-foreground">{agg.total} setoran{agg.approved > 0 ? ` · ${formatRupiah(agg.earned)}` : ""}</p></div>)}
                 </div>
               </div>)}
-              {filteredSubs.length === 0 ? <EmptyState text={query ? "Tidak ada Gmail yang cocok dengan pencarian." : rangeHasFilter ? "Tidak ada setoran pada rentang tanggal ini." : "Belum ada setoran."} /> : filteredSubs.map((s) => <article key={s.id} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-admin-heading text-base">{s.gmail_address}</h2><p className="mt-1 truncate text-xs font-medium text-admin-primary">Storan: {memberLabel(s.user_id)}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p></div><StatusBadge status={s.status} /></div><div className="flex items-center justify-between gap-3 rounded-2xl bg-muted p-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Password</p><p className="break-all font-mono text-sm">{s.password}</p></div><Button type="button" size="icon" variant="outline" className="shrink-0 rounded-xl" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy /></Button></div><div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => (st === "ditolak" ? rejectSub(s.id) : setSubStatus(s.id, st))} />)}</div>{s.status === "ditolak" && s.fix_guide && <div className="space-y-1 rounded-2xl bg-admin-danger-soft p-3 text-xs"><p className="font-bold text-admin-danger">Alasan: {s.rejection_reason}</p><p className="whitespace-pre-line text-foreground">{s.fix_guide}</p></div>}<Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button></article>)}
+              {filteredSubs.length === 0 ? <EmptyState text={query ? "Tidak ada Gmail yang cocok dengan pencarian." : rangeHasFilter ? "Tidak ada setoran pada rentang tanggal ini." : "Belum ada setoran."} /> : filteredSubs.map((s) => (
+                <article key={s.id} className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-0.5">
+                      <h2 className="truncate font-admin-heading text-sm font-semibold">{s.gmail_address}</h2>
+                      <p className="truncate text-xs font-medium text-admin-primary">Storan: {memberLabel(s.user_id)}</p>
+                      <p className="text-[10px] text-muted-foreground">{new Date(s.created_at).toLocaleString("id-ID")} · {formatRupiah(s.rate)}</p>
+                    </div>
+                    <StatusBadge status={s.status} />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-app-bg p-3">
+                    <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Password</p><p className="break-all font-mono text-xs text-admin-primary">{s.password}</p></div>
+                    <Button type="button" size="icon" variant="outline" className="size-8 shrink-0 rounded-lg" title="Salin password" onClick={() => { navigator.clipboard.writeText(s.password); toast.success("Password disalin"); }}><Copy className="size-3.5" /></Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">{STATUSES.map((st) => <StatusButton key={st} status={st} current={s.status} onClick={() => (st === "ditolak" ? rejectSub(s.id) : setSubStatus(s.id, st))} />)}</div>
+                  {s.status === "ditolak" && s.fix_guide && <div className="space-y-1 rounded-xl border border-admin-danger/30 bg-admin-danger-soft p-3 text-xs"><p className="font-bold text-admin-danger">Alasan: {s.rejection_reason}</p><p className="whitespace-pre-line text-foreground">{s.fix_guide}</p></div>}
+                  <Button type="button" variant="ghost" onClick={() => deleteSub(s.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus dari panel admin</Button>
+                </article>
+              ))}
             </div>}
-            {tab === "penarikan" && (filteredWds.length === 0 ? <EmptyState text={search ? "Tidak ada penarikan yang cocok dengan pencarian." : "Belum ada penarikan."} /> : filteredWds.map((w) => <article key={w.id} className="space-y-5 rounded-3xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
+            {tab === "penarikan" && (filteredWds.length === 0 ? <EmptyState text={search ? "Tidak ada penarikan yang cocok dengan pencarian." : "Belum ada penarikan."} /> : filteredWds.map((w) => <article key={w.id} className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="font-admin-heading text-xl">{formatRupiah(w.amount)}</h2><p className="mt-1 truncate text-sm font-medium text-muted-foreground">{w.method} · {w.account_info}</p><p className="mt-1 text-[10px] text-muted-foreground">{new Date(w.created_at).toLocaleString("id-ID")}</p></div><StatusBadge status={w.status} /></div><div className="grid grid-cols-3 gap-2">{W_STATUSES.map((st) => <StatusButton key={st} status={st} current={w.status} onClick={() => setWdStatus(w.id, st)} />)}</div><Button type="button" variant="ghost" onClick={() => deleteWd(w.id)} className="w-full rounded-xl text-admin-danger hover:bg-admin-danger-soft hover:text-admin-danger"><Trash2 />Hapus riwayat</Button></article>))}
           </section>}
 
           {section === "pengaturan" && <section className="space-y-4"><form onSubmit={saveSettings} className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm"><div><h2 className="font-admin-heading text-base">Pengaturan transaksi</h2><p className="mt-1 text-xs text-muted-foreground">Atur tarif dan batas transaksi member.</p></div>{[["Tarif per Gmail (Rp)",rate,setRate],["Saldo minimal penarikan (Rp)",minWithdraw,setMinWithdraw],["Biaya admin per penarikan (Rp)",adminFee,setAdminFee],["Batas setoran Gmail per hari (0 = tanpa batas)",dailyLimit,setDailyLimit],["Password setoran untuk member (huruf kecil, kosongkan bila member isi sendiri)",memberPassword,setMemberPassword]] .map(([label,value,setter]) => <label key={label as string} className="block text-xs font-semibold text-muted-foreground">{label as string}<input type="text" inputMode={label==="Password setoran untuk member (huruf kecil, kosongkan bila member isi sendiri)"?undefined:"numeric"} value={value as string} onChange={(e) => (setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} className={inputClass} /></label>)}<Button type="submit" disabled={savingSettings} className="h-12 w-full rounded-2xl bg-admin-primary text-primary-foreground hover:bg-admin-primary/90">{savingSettings ? "Menyimpan..." : "Simpan pengaturan"}</Button></form></section>}
@@ -481,8 +494,22 @@ function EmptyState({ text }: { text: string }) { return <div className="rounded
 
 function StatusButton({ status, current, onClick }: { status: string; current: string; onClick: () => void }) {
   const icon = status === "ditolak" ? <X /> : status === "menunggu" ? <Clipboard /> : <Check />;
-  const tone = status === "ditolak" ? "text-admin-danger hover:bg-admin-danger-soft" : status === "menunggu" ? "text-admin-warning hover:bg-admin-warning-soft" : "text-admin-success hover:bg-admin-success-soft";
-  return <Button type="button" variant="outline" onClick={onClick} disabled={current === status} className={`h-auto min-w-0 flex-col gap-1 rounded-2xl px-1 py-3 text-[11px] capitalize ${tone}`}>{icon}{status}</Button>;
+  const active = current === status;
+  const tone = status === "ditolak"
+    ? "border-admin-danger/40 bg-admin-danger-soft text-admin-danger"
+    : status === "menunggu"
+      ? "border-admin-warning/40 bg-admin-warning-soft text-admin-warning"
+      : "border-admin-success/40 bg-admin-success-soft text-admin-success";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={active}
+      className={`flex min-w-0 flex-col items-center gap-1 rounded-xl border px-1 py-2.5 text-[10px] font-bold capitalize transition ${active ? tone : "border-border bg-muted text-muted-foreground hover:text-foreground"}`}
+    >
+      {icon}{status}
+    </button>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
